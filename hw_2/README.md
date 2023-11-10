@@ -1,2 +1,2 @@
-# DD2360 Applied GPU Programming Assignment 1
-GPU architecture and basic programming environments
+# DD2360 Applied GPU Programming Assignment 2
+CUDA Basics I

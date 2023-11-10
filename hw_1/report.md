@@ -1,108 +1,113 @@
-%Assignment II: CUDA Basics I
-%Aritra Bhakat
-%\today
----
-documentclass: scrartcl
----
+# Assignment I: GPU architecture and basic programming environments
 
-## Exercise 1: Your first CUDA program and GPU performance metrics
-1. **Explain how the program is compiled and run.**
+## Exercise 1: Reflection on GPU-accelerated Computing
+**1. List the main differences between GPUs and CPUs in terms of architecture.**
 
-    The program is compiled with `nvcc -arch=sm_61 src_file -o dst_file`. This is specific to my GTX 1070 GPU as it has the `sm_61` architecture. This outputs and executable called `dst_file`, which can then be run on the command line with `./dst_file`.
+CPUs are built with a latency-oriented architecture. It completes a single serial task very quickly. GPUs are built with a throughput-oriented architecture. While they cannot complete a single task as fast as a CPU, they can complete many small tasks in parallel much quicker than a CPU (ie. higher throughput).
 
-2. **For a vector length of N:**
+**2. Check the latest Top500 list that ranks the top 500 most powerful supercomputers in the world. In the top 10, how many supercomputers use GPUs? Report the name of the supercomputers and their GPU vendor (Nvidia, AMD, ...) and model.**
 
-    1. **How many floating point operations are being performed in your vector add kernel?**
+In the June 2023 Top500 list, 7 out of the top 10 supercomputers use GPUs. Supercomputers Frontier and LUMI use AMD Instinct MI250X GPUs. Leonardo,  Perlmutter and Selene use NVIDIA A100 GPUs, while Summit and Sierra use NVIDIA Volta GV100. Tianhe-2A uses a multi-core accelerator called Matrix-2000, but I did not count it as it is not really a GPU.
 
-        There are $N$ floating point operations being performed by my add kernel, as there is one addition performed in each thread. If there are more than $N$ threads, the threads that do not correspond to a vector element do not do any additions.
+**3. One main advantage of GPU is its power efficiency, which can be quantified by Performance/Power, e.g., throughput as in FLOPS per watt power consumption. Calculate the power efficiency for the top 10 supercomputers.**
 
-    2. **How many global memory reads are being performed by your kernel?**
+| Rank | System               | Efficiency (GFlops/W) |
+|------|----------------------|-----------------------|
+| 1    |             Frontier |                 52.59 |
+| 2    | Supercomputer Fugaku |                 14.78 |
+| 3    |                 LUMI |                 51.38 |
+| 4    |             Leonardo |                 32.24 |
+| 5    |               Summit |                 14.72 |
+| 6    |               Sierra |                 12.72 |
+| 7    |    Sunway TaihuLight |                  6.05 |
+| 8    |           Perlmutter |                 27.37 |
+| 9    |               Selene |                 23.98 |
+| 1o   |            Tianhe-2A |                  3.32 |
 
-        There are $2N$ global memory reads performed by the kernel, as each thread has to read the 2 vector elements that need to be added.
 
-3. **For a vector length of 1024:**
+## Exercise 2: Query Nvidia GPU Compute Capability
 
-    1. **Explain how many CUDA threads and thread blocks you used.**
+**1. The screenshot of the output from running deviceQuery test in /1_Utilities.**
 
-        I use a constant amount of threads per block, in this case `TPB = 32`. The amount of thread blocks is `1024 / 32 = 32`. This means the total amount of threads is `32 * 32 = 1024`
+![](img/devicequery.png)
 
-    2. **Profile your program with Nvidia Nsight. What Achieved Occupancy did you get?**
+**2. What is the Compute Capability of your GPU device?**
 
-        `0.033144`
+`CUDA Capability Major/Minor version number:    6.1`
 
-4. **Now increase the vector length to 131070:**
-    
-    1. **Did your program still work? If not, what changes did you make?**
+**3. The screenshot of the output from running bandwidthTest test in /1_Utilities.**
 
-        The program still works.
+![](img/bandwidthtest.png)
 
-    2. **Explain how many CUDA threads and thread blocks you used.**
+**4. How will you calculate the GPU memory bandwidth (in GB/s) using the output from deviceQuery? Are they consistent with your results from bandwidthTest?**
 
-        The amount of threads per block is still `TPB = 32`. The amount of thread blocks is $\lceil N / TPB \rceil = \lceil 4095.94 \rceil = 4096$. Thus the amount of threads is `4096 * 32 = 131072`.
+From deviceQuery we get
+```
+Memory Clock rate:                             4004 Mhz
+Memory Bus Width:                              256-bit
+```
 
-    3. **Profile your program with Nvidia Nsight. What Achieved Occupancy do you get now?**
+We can estimate the device to device bandwidth $B$ using this information and the fact that the GTX 1070 uses DDR (double data rate) memory:
 
-        `0.403677`
+$B = 2 \cdot \frac{4004 \text{ MHz}}{256 \text{ bits}} = 2050048 \text{ Mbit/s} = 256.26 \text{ GB/s}$
 
-5. **Further increase the vector length, plot a stacked bar chart showing the breakdown of time including (1) data copy from host to device (2) the CUDA kernel (3) data copy from device to host.**
+The bandwidth test achieved a device to device bandwidth of $194.1 \text{ GB/s}$, which is 76% of the theoretical bandwidth. This result is thus fairly consistent, and the discrepancy could be explained by other factors, such as the warning that is given after running the program:
 
-    ![](img/vecadd-stackedbar.png)
+```
+NOTE: The CUDA Samples are not meant for performance measurements.
+```
 
-    The execution time is dominated by the data transfer, especially for larger $N$. The kernel execution time is close to constant, or at least increases very slowly. This is probably because there are enough cores to execute the kernel at once for smaller data sizes.
+# Exercise 3: Rodinia CUDA benchmarks and Comparison with CPU
 
-## Exercise 2: 2D Dense Matrix Multiplication
+**1. Compile both OMP and CUDA versions of your selected benchmarks. Do you need to make any changes in Makefile?**
 
-1. **Name three applications/domains of matrix multiplication.**
-    - Transform matrices in 3D graphics
-    - Stress tensor in solid mechanics
-    - Quantum gates which can be represented by matrices (applying multiple gates corresponds to matrix multiplication)
+For CUDA, I need to add my GPU architecture (sm_61) to the Makefile in the root directory (and sometimes also within the benchmark directory) so that the correct NVCC compiler flag is used.
 
-2. **How many floating point operations are being performed in your matrix multiply kernel?** 
+**2. Ensure the same input problem is used for OMP and CUDA versions. Report and compare their execution time.**
 
-    Each thread performs `numAColumns` multiply-adds (2 operations). There are `numARows * numBColumns` threads, so in total `2 * numARows * numBColumns * numAColumns = 2 * numARows * numBColumns * numBRows` floating point operations are performed by the kernel.
+The following parameters were used for the respective benchmarks
 
-3. **How many global memory reads are being performed by your kernel?**
-    
-    For each multiply-add 3 global memory reads are performed. Then, in total `3 * numARows * numBColumns * numAColumns` global memory reads are performed.
+*Particle filter*:
+```
+-x 128 -y 128 -z 128 -np 100000
+```
 
-4. **For a matrix A of (128x128) and B of (128x128):**
+*Streamcluster*:
+```
+k1 k2 d   n     chunksize clustersize infile  outfile     nproc
+10 20 256 65536 65536     1000        none    output.txt  4     (OpenMP)
+10 20 256 65536 65536     1000        none    output.txt  1     (CUDA)
+```
 
-    1. **Explain how many CUDA threads and thread blocks you used.**
+*LU Decomposition*:
+```
+KERNEL_DIM="-DRD_WG_SIZE_0=16" (CUDA)
+-s 16384
+```
 
-        The amount of threads per block dimension I kept constant, using `TPBD = 16`. The layout of the thread blocks is `(128, 128) / 16 = (8, 8)`, so a total of 64 thread blocks were used. The amount of threads is `64 * 16 * 16 = 16384`. 
+|  Benchmark       | CUDA                                        | OpenMP      |
+|------------------|---------------------------------------------|-------------|
+| Particle filter  | 13.661795s (naive) <br/> 10.793439s (float) | 137.863052s |
+| Streamcluster    | 7.025146s                                   | 12.639155s  |
+| LU Decomposition | 5.332791s                                   | 88.369579s  |
 
-    2. **Profile your program with Nvidia Nsight. What Achieved Occupancy did you get?**
+**3. Do you observe expected speedup on GPU compared to CPU? Why or Why not?**
 
-        `0.532290` 
+Speedup is observed for all the problems. I did increase the problem sizes (somewhat arbitrarily) until they were large enough to demonstrate GPU speedup. In the benchmarks the observed speedup is between 1.8 and 16.6. The speedup occurs as the GPU can process many more (order of magnitudes) threads simultaneously than the CPU, and with larger problems all the threads can be utilised.
 
-5. **For a matrix A of (511x1023) and B of (1023x4094):**
+# Exercise 4: Run a HelloWorld on AMD GPU
 
-    1. **Did your program still work? If not, what changes did you make?**
-        
-        The program still works.
+**1. How do you launch the code on GPU on Dardel supercomputer?**
 
-    2. **Explain how many CUDA threads and thread blocks you used.**
+First we request an interactive job allocation on the GPU partition like so:
+```
+salloc -A edu23.dd2360 -p gpu -N 1 -t 00:10:00
+```
+This allocates a job on the GPU partition on 1 node for 10 minutes. We can then run it using the `srun` command:
+```
+srun -n 1 ./HelloWorld
+```
 
-        The amount of threads per block dimension is still `TPBD = 16`. The amount of thread blocks in each dimension is calculated as $\lceil (511, 4094) / 16 \rceil = (32, 256)$. The total amount of thread blocks is then `32 * 256 = 8192`. The total amount of threads is `8192 * 16 * 16 = 2097152`.
+**2. Include a screenshot of your output from Dardel**
 
-    3. **Profile your program with Nvidia Nsight. What Achieved Occupancy do you get now?**
-
-        `0.985776`
-
-6. **Further increase the size of matrix A and B, plot a stacked bar chart showing the breakdown of time including (1) data copy from host to device (2) the CUDA kernel (3) data copy from device to host. For this, you will need to add simple CPU timers to your code regions. Explain what you observe.**
-
-    For the following tests, we use square matrices of size $N$.
-
-    ![](img/mmul-double-smalln.png)
-
-    ![](img/mmul-double-largen.png)
-
-    For large $N$, the execution time is dominated by the kernel time, data transfer time is negligible in comparison. This is because complexity of matrix multiplication increases as $\mathcal{O}(n)$ per thread, and all threads not being able to execute simultaneously as they don't fit into register.
-
-7. **Now, change DataType from double to float, re-plot the a stacked bar chart showing the time breakdown. Explain what you observe.**
-
-    ![](img/mmul-float-smalln.png)
-
-    ![](img/mmul-float-largen.png)
-
-    When using floats, kernel time remains similar despite the smaller size of the data. This is probably because we are still using the same amount of threads and they are scheduled the same way. If the data could be packed tighter execution time could probably be halved. Data transfer time is of course halved (looking at the raw data, not visible on the cahrt as data tranfer time << kernel time), as floats are half the size of doubles.
+![](img/amdhello.png)
