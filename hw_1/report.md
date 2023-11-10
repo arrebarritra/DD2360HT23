@@ -1,4 +1,9 @@
-# Assignment I: GPU architecture and basic programming environments
+%Assignment II: CUDA Basics I
+%Aritra Bhakat
+%\today
+---
+documentclass: scrartcl
+---
 
 ## Exercise 1: Reflection on GPU-accelerated Computing
 **1. List the main differences between GPUs and CPUs in terms of architecture.**
