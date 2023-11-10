@@ -5,6 +5,8 @@
 documentclass: scrartcl
 ---
 
+[GitHub repo](https://github.com/arrebarritra/DD2360HT23/tree/main/hw_2)
+
 ## Exercise 1: Your first CUDA program and GPU performance metrics
 1. **Explain how the program is compiled and run.**
 
@@ -46,7 +48,7 @@ documentclass: scrartcl
 
 5. **Further increase the vector length, plot a stacked bar chart showing the breakdown of time including (1) data copy from host to device (2) the CUDA kernel (3) data copy from device to host.**
 
-    ![](img/vecadd-stackedbar.png)
+    ![](ex_1/img/vecadd-stackedbar.png)
 
     The execution time is dominated by the data transfer, especially for larger $N$. The kernel execution time is close to constant, or at least increases very slowly. This is probably because there are enough cores to execute the kernel at once for smaller data sizes.
 
@@ -93,16 +95,16 @@ documentclass: scrartcl
 
     For the following tests, we use square matrices of size $N$.
 
-    ![](img/mmul-double-smalln.png)
+    ![](ex_2/img/mmul-double-smalln.png)
 
-    ![](img/mmul-double-largen.png)
+    ![](ex_2/img/mmul-double-largen.png)
 
     For large $N$, the execution time is dominated by the kernel time, data transfer time is negligible in comparison. This is because complexity of matrix multiplication increases as $\mathcal{O}(n)$ per thread, and all threads not being able to execute simultaneously as they don't fit into register.
 
 7. **Now, change DataType from double to float, re-plot the a stacked bar chart showing the time breakdown. Explain what you observe.**
 
-    ![](img/mmul-float-smalln.png)
+    ![](ex_2/img/mmul-float-smalln.png)
 
-    ![](img/mmul-float-largen.png)
+    ![](ex_2/img/mmul-float-largen.png)
 
     When using floats, kernel time remains similar despite the smaller size of the data. This is probably because we are still using the same amount of threads and they are scheduled the same way. If the data could be packed tighter execution time could probably be halved. Data transfer time is of course halved (looking at the raw data, not visible on the cahrt as data tranfer time << kernel time), as floats are half the size of doubles.
