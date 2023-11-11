@@ -31,6 +31,11 @@ documentclass: scrartcl
 
 8. **For a input array of 1024 elements, profile with Nvidia Nsight and report Shared Memory Configuration Size and Achieved Occupancy. Did Nvsight report any potential performance issues?**
 
+    ```
+    Shared Memory Configuration Size                                                 Kbyte                          32.77
+    ...                                                                                ...                            ...
+    Achieved Occupancy                                                                   %                          47.57
+    ```
 # Exercise 2: Histogram and Atomics
 
 1. **Describe the environment you used, what changes you made to the Makefile, and how you ran the simulation.**
