@@ -10,7 +10,7 @@ documentclass: scrartcl
 ## Exercise 1: Your first CUDA program and GPU performance metrics
 1. **Explain how the program is compiled and run.**
 
-    The program is compiled with `nvcc -arch=sm_61 src_file -o dst_file`. This is specific to my GTX 1070 GPU as it has the `sm_61` architecture. This outputs and executable called `dst_file`, which can then be run on the command line with `./dst_file`.
+    The program is compiled with `nvcc -arch=sm_61 src_file -Xptxas -O3 -o dst_file`. The `-arch=sm_61` flag corresponds to my GTX 1070 GPU architecture. I also pass the flag `-Xptxas -O3` maximise the optimisation for the kernel code, and `-Xcompiler -O3` to do the same for the host code. This outputs and executable called `dst_file`, which can then be run on the command line with `./dst_file`.
 
 2. **For a vector length of N:**
 
