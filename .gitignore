@@ -6,6 +6,8 @@
 # Ignore generated binaries
 *.o
 *.lib
+*.exe
+*.exp
 
 #CUDA
 *.i
