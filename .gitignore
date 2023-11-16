@@ -1,7 +1,10 @@
-# Ignore extensionless files (ie. generated binaries)
+# Ignore extensionless files (ie. generated binaries), except some special ones
 *
 !/**/
 !*.*
+!Makefile
+!README
+!LICENSE
 
 # Ignore generated binaries
 *.o
