@@ -129,9 +129,9 @@ void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struc
 
     cudaMemcpy(d_ids, ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
 
-    FPinterp* d_rhon, d_rhoc;
-    FPinterp* d_Jx, d_Jy, d_Jz;
-    FPinterp* d_pxx, d_pxy, d_pxz, d_pyy, d_pyz, d_pzz;
+    FPinterp* d_rhon, * d_rhoc;
+    FPinterp* d_Jx, * d_Jy, * d_Jz;
+    FPinterp* d_pxx, * d_pxy, * d_pxz, * d_pyy, * d_pyz, * d_pzz;
 
     cudaMemcpy(&d_rhon, &d_ids->rhon, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_rhoc, &d_ids->rhoc, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
@@ -162,9 +162,9 @@ void interp_dens_species_synchronize_device(struct interpDensSpecies* h_ids, str
 
     cudaMemcpy(ids, d_ids, sizeof(interpDensSpecies), cudaMemcpyDeviceToHost);
 
-    FPinterp* d_rhon, d_rhoc;
-    FPinterp* d_Jx, d_Jy, d_Jz;
-    FPinterp* d_pxx, d_pxy, d_pxz, d_pyy, d_pyz, d_pzz;
+    FPinterp* d_rhon, * d_rhoc;
+    FPinterp* d_Jx, * d_Jy, * d_Jz;
+    FPinterp* d_pxx, * d_pxy, * d_pxz, * d_pyy, * d_pyz, * d_pzz;
 
     cudaMemcpy(&d_rhon, &d_ids->rhon, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_rhoc, &d_ids->rhoc, sizeof(FPinterp*), cudaMemcpyDeviceToHost);

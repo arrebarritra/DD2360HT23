@@ -27,16 +27,16 @@ inline long get_idx(long x, long y, long s1)
     return x + (y * s1);
 }
 
-__host__ __device__
 template < class type >
+__host__ __device__
 inline type *newArr1(size_t sz1)
 {
   type *arr = new type[sz1];
   return arr;
 }
 
-__host__ __device__
 template < class type >
+__host__ __device__
 inline type **newArr2(size_t sz1, size_t sz2)
 {
   type **arr = new type*[sz1]; // new type *[sz1];
@@ -49,8 +49,8 @@ inline type **newArr2(size_t sz1, size_t sz2)
   return arr;
 }
 
-__host__ __device__
 template < class type >
+__host__ __device__
 inline type ***newArr3(size_t sz1, size_t sz2, size_t sz3)
 {
   type ***arr = new type**[sz1]; // new type **[sz1];
@@ -63,8 +63,8 @@ inline type ***newArr3(size_t sz1, size_t sz2, size_t sz3)
   return arr;
 }
 
-__host__ __device__
 template <class type>
+__host__ __device__
 inline type ****newArr4(size_t sz1, size_t sz2, size_t sz3, size_t sz4)
 {
   type ****arr = new type***[sz1]; //(new type ***[sz1]);
@@ -98,8 +98,8 @@ inline type *****newArr5(type **in, size_t sz1, size_t sz2, size_t sz3, size_t s
   return arr;
 }
 
-__global__
 template <class type>
+__global__
 inline void newArr5(type****** out, type** in, size_t sz1, size_t sz2, size_t sz3, size_t sz4, size_t sz5)
 {
     *in = newArr1<type>(sz1 * sz2 * sz3 * sz4 * sz5);
@@ -133,8 +133,8 @@ inline type ****newArr4(type **in, size_t sz1, size_t sz2, size_t sz3, size_t sz
 }
 
 
-__global__
 template <class type>
+__global__
 inline void newArr4(type***** out, type** in, size_t sz1, size_t sz2, size_t sz3, size_t sz4)
 {
     *in = newArr1<type>(sz1 * sz2 * sz3 * sz4);
@@ -167,8 +167,8 @@ inline type ***newArr3(type **in, size_t sz1, size_t sz2, size_t sz3)
   return arr;
 }
 
-__global__
 template <class type>
+__global__
 inline void newArr3(type**** out, type** in, size_t sz1, size_t sz2, size_t sz3)
 {
     *in = newArr1<type>(sz1 * sz2 * sz3);
@@ -198,8 +198,8 @@ inline type **newArr2(type **in, size_t sz1, size_t sz2)
   return arr;
 }
 
-__global__
 template <class type>
+__global__
 inline void newArr2(type*** out, type** in, size_t sz1, size_t sz2)
 {
     *in = newArr1<type>(sz1 * sz2);
@@ -214,32 +214,46 @@ inline void newArr2(type*** out, type** in, size_t sz1, size_t sz2)
 
 // methods to deallocate arrays
 //
+template < class type > 
 __host__ __global__
-template < class type > inline void delArray1(type * arr)
+inline void delArray1(type * arr)
 { delete[](arr); }
+
+template < class type > 
 __host__ __global__
-template < class type > inline void delArray2(type ** arr)
+inline void delArray2(type ** arr)
 { delArray1(arr[0]); delete[](arr); }
+
+template < class type > 
 __host__ __global__
-template < class type > inline void delArray3(type *** arr)
+inline void delArray3(type *** arr)
 { delArray2(arr[0]); delete[](arr); }
+
+template < class type >
 __host__ __global__
-template < class type > inline void delArray4(type **** arr)
+inline void delArray4(type **** arr)
 { delArray3(arr[0]); delete[](arr); }
 //
 // versions with dummy dimensions (for backwards compatibility)
 //
+template <class type>
 __host__ __global__
-template <class type> inline void delArr1(type * arr)
+inline void delArr1(type * arr)
 { delArray1<type>(arr); }
+
+template <class type>
 __host__ __global__
-template <class type> inline void delArr2(type ** arr, size_t sz1)
+inline void delArr2(type ** arr, size_t sz1)
 { delArray2<type>(arr); }
+
+template <class type> 
 __host__ __global__
-template <class type> inline void delArr3(type *** arr, size_t sz1, size_t sz2)
+inline void delArr3(type *** arr, size_t sz1, size_t sz2)
 { delArray3<type>(arr); }
+
+template <class type>
 __host__ __global__
-template <class type> inline void delArr4(type **** arr, size_t sz1, size_t sz2, size_t sz3)
+inline void delArr4(type **** arr, size_t sz1, size_t sz2, size_t sz3)
 { delArray4<type>(arr); }
 
 #define newArr1(type, sz1) newArr1<type>(sz1)

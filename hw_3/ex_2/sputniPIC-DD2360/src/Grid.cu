@@ -1,5 +1,7 @@
 #include <iostream>
 #include "Grid.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 /** Set up the grid quantities */
 void setGrid(struct parameters* param, struct grid* grd)
@@ -167,10 +169,10 @@ void grid_deallocate(struct grid* grd)
 void grid_deallocate_device(struct grid ´d_grd)
 {
     // E deallocate 3D arrays
-    FPfield*** d_XN, d_YN, d_ZN;
-    cudaMemcpy(&d_XN, &d_grd->XN, sizeof(FPfield), cudaDeviceToHost);
-    cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield), cudaDeviceToHost);
-    cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield), cudaDeviceToHost);
+    FPfield*** d_XN, *** d_YN, *** d_ZN;
+    cudaMemcpy(&d_XN, &d_grd->XN, sizeof(FPfield), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield), cudaMemcpyDeviceToHost);
 
     delArr3<<<1,1>>>(d_XN, d_grd->nxn, d_grd->nyn);
     delArr3<<<1,1>>>(d_YN, d_grd->nxn, d_grd->nyn);

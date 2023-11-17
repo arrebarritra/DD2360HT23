@@ -10,8 +10,6 @@
 #include "EMfield.h"
 #include "InterpDensSpecies.h"
 
-#define GPU
-
 struct particles {
     
     /** species ID: 0, 1, 2 , ... */

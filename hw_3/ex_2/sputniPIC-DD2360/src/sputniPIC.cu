@@ -30,6 +30,9 @@
 // Read and output operations
 #include "RW_IO.h"
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 int main(int argc, char **argv){
     
     // Read the inputfile and fill the param structure
@@ -41,7 +44,7 @@ int main(int argc, char **argv){
 
 #ifdef GPU
 
-    param* d_param;
+    parameters* d_param;
     cudaMalloc(&d_param, sizeof(parameters));
     cudaMemcpy(d_param, param, cudaMemcpyHostToDevice);
 
