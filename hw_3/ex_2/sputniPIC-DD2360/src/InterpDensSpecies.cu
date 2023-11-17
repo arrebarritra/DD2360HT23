@@ -109,19 +109,19 @@ void interp_dens_species_deallocate_device(struct grid* grd, struct interpDensSp
     cudaMemcpy(&d_pzz, &d_ids->pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
     // deallocate 3D arrays
-    delArr3(d_rhon, grd->nxn, grd->nyn);
-    delArr3(d_rhoc, grd->nxc, grd->nyc);
+    delArr3_device<<<1,1>>>(d_rhon, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_rhoc, grd->nxc, grd->nyc);
     // deallocate 3D arrays: J - current
-    delArr3(d_Jx, grd->nxn, grd->nyn);
-    delArr3(d_Jy, grd->nxn, grd->nyn);
-    delArr3(d_Jz, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_Jx, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_Jy, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_Jz, grd->nxn, grd->nyn);
     // deallocate 3D arrays: pressure
-    delArr3(d_pxx, grd->nxn, grd->nyn);
-    delArr3(d_pxy, grd->nxn, grd->nyn);
-    delArr3(d_pxz, grd->nxn, grd->nyn);
-    delArr3(d_pyy, grd->nxn, grd->nyn);
-    delArr3(d_pyz, grd->nxn, grd->nyn);
-    delArr3(d_pzz, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pxx, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pxy, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pxz, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pyy, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pyz, grd->nxn, grd->nyn);
+    delArr3_device<<<1,1>>>(d_pzz, grd->nxn, grd->nyn);
 
 }
 

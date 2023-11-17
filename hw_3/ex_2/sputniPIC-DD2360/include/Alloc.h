@@ -234,28 +234,28 @@ inline void delArray4(type **** arr)
 //
 template < class type >
 __global__
-inline void delArray1(type* arr)
+inline void delArray1_device(type* arr)
 {
     delete[](arr);
 }
 
 template < class type >
 __global__
-inline void delArray2(type** arr)
+inline void delArray2_device(type** arr)
 {
     delArray1(arr[0]); delete[](arr);
 }
 
 template < class type >
 __global__
-inline void delArray3(type*** arr)
+inline void delArray3_device(type*** arr)
 {
     delArray2(arr[0]); delete[](arr);
 }
 
 template < class type >
 __global__
-inline void delArray4(type**** arr)
+inline void delArray4_device(type**** arr)
 {
     delArray3(arr[0]); delete[](arr);
 }
@@ -283,28 +283,28 @@ inline void delArr4(type **** arr, size_t sz1, size_t sz2, size_t sz3)
 //
 template <class type>
 __global__
-inline void delArr1(type* arr)
+inline void delArr1_device(type* arr)
 {
     delArray1<type>(arr);
 }
 
 template <class type>
 __global__
-inline void delArr2(type** arr, size_t sz1)
+inline void delArr2_device(type** arr, size_t sz1)
 {
     delArray2<type>(arr);
 }
 
 template <class type>
 __global__
-inline void delArr3(type*** arr, size_t sz1, size_t sz2)
+inline void delArr3_device(type*** arr, size_t sz1, size_t sz2)
 {
     delArray3<type>(arr);
 }
 
 template <class type>
 __global__
-inline void delArr4(type**** arr, size_t sz1, size_t sz2, size_t sz3)
+inline void delArr4_device(type**** arr, size_t sz1, size_t sz2, size_t sz3)
 {
     delArray4<type>(arr);
 }
