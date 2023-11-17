@@ -158,9 +158,9 @@ void printGrid(struct grid* grd)
 /** allocate electric and magnetic field */
 void grid_deallocate(struct grid* grd)
 {
-    delArr3(grd->XN, grd->nxn, grd->nyn);
-    delArr3(grd->YN, grd->nxn, grd->nyn);
-    delArr3(grd->ZN, grd->nxn, grd->nyn);
+    delArr3<<<1,1>>>(grd->XN, grd->nxn, grd->nyn);
+    delArr3<<<1,1>>>(grd->YN, grd->nxn, grd->nyn);
+    delArr3<<<1,1>>>(grd->ZN, grd->nxn, grd->nyn);
 }
 
 #ifdef GPU

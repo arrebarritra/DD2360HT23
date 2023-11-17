@@ -215,46 +215,99 @@ inline void newArr2(type*** out, type** in, size_t sz1, size_t sz2)
 // methods to deallocate arrays
 //
 template < class type > 
-__host__ __global__
 inline void delArray1(type * arr)
 { delete[](arr); }
 
 template < class type > 
-__host__ __global__
 inline void delArray2(type ** arr)
 { delArray1(arr[0]); delete[](arr); }
 
 template < class type > 
-__host__ __global__
 inline void delArray3(type *** arr)
 { delArray2(arr[0]); delete[](arr); }
 
 template < class type >
-__host__ __global__
 inline void delArray4(type **** arr)
 { delArray3(arr[0]); delete[](arr); }
+
+// methods to deallocate arrays device
+//
+template < class type >
+__global__
+inline void delArray1(type* arr)
+{
+    delete[](arr);
+}
+
+template < class type >
+__global__
+inline void delArray2(type** arr)
+{
+    delArray1(arr[0]); delete[](arr);
+}
+
+template < class type >
+__global__
+inline void delArray3(type*** arr)
+{
+    delArray2(arr[0]); delete[](arr);
+}
+
+template < class type >
+__global__
+inline void delArray4(type**** arr)
+{
+    delArray3(arr[0]); delete[](arr);
+}
 //
 // versions with dummy dimensions (for backwards compatibility)
 //
 template <class type>
-__host__ __global__
 inline void delArr1(type * arr)
 { delArray1<type>(arr); }
 
 template <class type>
-__host__ __global__
 inline void delArr2(type ** arr, size_t sz1)
 { delArray2<type>(arr); }
 
-template <class type> 
-__host__ __global__
+template <class type>
 inline void delArr3(type *** arr, size_t sz1, size_t sz2)
 { delArray3<type>(arr); }
 
 template <class type>
-__host__ __global__
 inline void delArr4(type **** arr, size_t sz1, size_t sz2, size_t sz3)
 { delArray4<type>(arr); }
+
+//
+// versions with dummy dimensions device (for backwards compatibility)
+//
+template <class type>
+__global__
+inline void delArr1(type* arr)
+{
+    delArray1<type>(arr);
+}
+
+template <class type>
+__global__
+inline void delArr2(type** arr, size_t sz1)
+{
+    delArray2<type>(arr);
+}
+
+template <class type>
+__global__
+inline void delArr3(type*** arr, size_t sz1, size_t sz2)
+{
+    delArray3<type>(arr);
+}
+
+template <class type>
+__global__
+inline void delArr4(type**** arr, size_t sz1, size_t sz2, size_t sz3)
+{
+    delArray4<type>(arr);
+}
 
 #define newArr1(type, sz1) newArr1<type>(sz1)
 #define newArr(type,sz1,sz2) newArr2<type>(sz1, sz2)
