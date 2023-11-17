@@ -40,6 +40,8 @@ documentclass: scrartcl
 
 1. **Describe the environment you used, what changes you made to the Makefile, and how you ran the simulation.**
 
+    I use a WSL2 Ubuntu environment within my Windows PC (sometimes also ran CUDA directly in Windows). I had to change the Makefile variable for the GPU architecture to `ARCH=sm_61` which corresponds to my GTX 1070 GPU architecture. I ran the simulation both in WSL2 and Windows.
+
 2. **Describe your design of the GPU implementation of mover_PC() briefly.**
 
 3. **Compare the output of both CPU and GPU implementation to guarantee that your GPU implementations produce correct answers.**
