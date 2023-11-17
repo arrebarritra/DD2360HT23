@@ -83,7 +83,6 @@ struct parameters {
     double w0[NS_MAX];
     
     
-    
     /** Boundary Condition: Periodicity **/
     // here you have to set the topology for the fields
     /** Periodicity for fields X **/

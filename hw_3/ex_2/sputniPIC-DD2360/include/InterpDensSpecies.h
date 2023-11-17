@@ -35,6 +35,21 @@ void interp_dens_species_allocate(struct grid* grd, struct interpDensSpecies* id
 /** deallocate interpolated densities per species */
 void interp_dens_species_deallocate(struct grid* grd, struct interpDensSpecies* ids);
 
+#ifdef GPU
+
+/** allocated interpolated densities per species */
+void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies* d_ids, int is);
+
+/** deallocate interpolated densities per species */
+void interp_dens_species_deallocate_device(struct grid* grd, struct interpDensSpecies* d_ids);
+
+/** synchronize */
+void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids);
+void interp_dens_species_synchronize_device(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids);
+
+#endif // GPU
+
+
 /** deallocate interpolated densities per species */
 void interpN2Crho(struct interpDensSpecies* ids, struct grid* grd);
 

@@ -64,11 +64,25 @@ struct grid {
 /** Set up the grid quantities */
 void setGrid(struct parameters*, struct grid*);
 
+#ifdef GPU
+#TPBD 16
+__global__ setGridCoords(grid* grd);
+void setGrid_device(struct parameters*, struct grid*);
+#endif // GPU
+
+
 /** Set up the grid quantities */
 void printGrid(struct grid*);
 
 /** allocate electric and magnetic field */
 void grid_deallocate(struct grid*);
+
+#ifdef GPU
+
+void grid_deallocate_device(struct grid*);
+
+#endif // GPU
+
 
 /** interpolation Node to Center */
 void interpN2Cfield(FPfield***, FPfield***, FPfield***, FPfield***, FPfield***, FPfield***, struct grid*);

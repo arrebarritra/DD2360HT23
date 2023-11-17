@@ -24,7 +24,6 @@ struct EMfield {
     FPfield*** Bzn;
     FPfield* Bzn_flat;
     
-    
 };
 
 /** allocate electric and magnetic field */
@@ -32,5 +31,21 @@ void field_allocate(struct grid*, struct EMfield*);
 
 /** deallocate electric and magnetic field */
 void field_deallocate(struct grid*, struct EMfield*);
+
+
+#ifdef GPU
+
+/** allocate electric and magnetic field */
+void field_allocate_device(struct grid*, struct EMfield*);
+
+/** deallocate electric and magnetic field */
+void field_deallocate_device(struct grid*, struct EMfield*);
+
+/** synchronize */
+void particle_synchronize_host(struct EMfield*, struct EMfield*);
+void particle_synchronize_device(struct EMfield*, struct EMfield*);
+
+#endif // GPU
+
 
 #endif

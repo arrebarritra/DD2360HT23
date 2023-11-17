@@ -30,7 +30,6 @@
 // Read and output operations
 #include "RW_IO.h"
 
-
 int main(int argc, char **argv){
     
     // Read the inputfile and fill the param structure
@@ -39,6 +38,14 @@ int main(int argc, char **argv){
     readInputFile(&param,argc,argv);
     printParameters(&param);
     saveParameters(&param);
+
+#ifdef GPU
+
+    param* d_param;
+    cudaMalloc(&d_param, sizeof(parameters));
+    cudaMemcpy(d_param, param, cudaMemcpyHostToDevice);
+
+#endif // GPU
     
     // Timing variables
     double iStart = cpuSecond();
@@ -47,10 +54,21 @@ int main(int argc, char **argv){
     // Set-up the grid information
     grid grd;
     setGrid(&param, &grd);
+#ifdef GPU
+    grid* d_grd;
+    setGrid_device(&param, d_grd);
+#endif // GPU
+
     
     // Allocate Fields
     EMfield field;
     field_allocate(&grd,&field);
+
+#ifdef GPU
+    EMfield* d_field;
+    field_allocate_device(&grd, d_field);
+#endif // GPU
+
     EMfield_aux field_aux;
     field_aux_allocate(&grd,&field_aux);
     
@@ -58,22 +76,50 @@ int main(int argc, char **argv){
     // Allocate Interpolated Quantities
     // per species
     interpDensSpecies *ids = new interpDensSpecies[param.ns];
-    for (int is=0; is < param.ns; is++)
-        interp_dens_species_allocate(&grd,&ids[is],is);
+#ifdef GPU
+    interpDensSpecies **d_ids[param.ns];
+#endif // GPU
+
+
+
+    for (int is = 0; is < param.ns; is++) {
+        interp_dens_species_allocate(&grd, &ids[is], is);
+
+#ifdef GPU
+        interp_dens_species_allocate_device(&grd, d_ids[is], is);
+#endif // GPU
+
+    }
     // Net densities
     interpDensNet idn;
     interp_dens_net_allocate(&grd,&idn);
     
     // Allocate Particles
     particles *part = new particles[param.ns];
+
+#ifndef GPU    
+    particles **d_part[param.ns];
+#endif // GPU
+
     // allocation
     for (int is=0; is < param.ns; is++){
         particle_allocate(&param,&part[is],is);
+
+#ifdef GPU
+        particle_allocate_device(d_param, d_part[is], is);
+#endif // GPU
     }
     
     // Initialization
     initGEM(&param,&grd,&field,&field_aux,part,ids);
-    
+#ifdef GPU
+    for (int is = 0; is < param.ns; is++) {
+        particle_synchronize_device(&part[is], d_part[is]);
+        interp_dens_species_synchronize_device(&ids[is], &d_ids);
+    }
+    field_synchronize_device(&grd, &field, d_field);
+#endif // GPU
+
     
     // **********************************************************//
     // **** Start the Simulation!  Cycle index start from 1  *** //
@@ -92,18 +138,32 @@ int main(int argc, char **argv){
         
         // implicit mover
         iMover = cpuSecond(); // start timer for mover
-        for (int is=0; is < param.ns; is++)
-            mover_PC(&part[is],&field,&grd,&param);
+        for (int is = 0; is < param.ns; is++) {
+#ifndef GPU
+            mover_PC(&part[is], &field, &grd, &param);
+#else
+            mover_PC(d_part[is], d_field, d_grd, d_param);
+#endif // GPU
+        }
+
         eMover += (cpuSecond() - iMover); // stop timer for mover
         
         
-        
+
         
         // interpolation particle to grid
         iInterp = cpuSecond(); // start timer for the interpolation step
         // interpolate species
-        for (int is=0; is < param.ns; is++)
-            interpP2G(&part[is],&ids[is],&grd);
+        for (int is = 0; is < param.ns; is++) {
+#ifndef GPU
+            interpP2G(&part[is], &ids[is], &grd);
+#else
+            interp_dens_species_synchronize_device(&part[is], d_part[is]);
+            interpP2G(d_part[is], d_ids[is], d_grd);
+            interp_dens_species_synchronize_host(&part[is], d_part[is]);            
+#endif // GPU
+        }
+
         // apply BC to interpolated densities
         for (int is=0; is < param.ns; is++)
             applyBCids(&ids[is],&grd,&param);

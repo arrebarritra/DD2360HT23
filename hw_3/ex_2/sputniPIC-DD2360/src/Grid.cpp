@@ -64,6 +64,84 @@ void setGrid(struct parameters* param, struct grid* grd)
     }
 }
 
+#ifdef GPU
+
+__global__ setGridCoords(grid* grd) {
+    i = blockDim.x * blockIdx.x + threadIdx.x;
+    j = blockDim.y * blockIdx.y + threadIdx.y;
+    k = blockDim.z * blockIdx.z + threadIdx.z;
+
+    // calculate the coordinates - Nodes
+    grd->XN[i][j][k] = (FPfield)(grd->xStart + (i - 1) * grd->dx);
+    grd->YN[i][j][k] = (FPfield)(grd->yStart + (j - 1) * grd->dy);
+    grd->ZN[i][j][k] = (FPfield)(grd->zStart + (k - 1) * grd->dz);
+
+}
+
+/** Set up the grid quantities */
+void setGrid_device(struct parameters* param, struct grid* d_grd)
+{
+    grid* grd = new grid;
+
+    ///////////////////////////////
+    // add 2 for the guard cells
+    // useful for BC and potential domain decomposition
+    grd->nxc = param->nxc + 2;
+    grd->nyc = param->nyc + 2;
+    grd->nzc = param->nzc + 2;
+
+    grd->nxn = grd->nxc + 1;
+    grd->nyn = grd->nyc + 1;
+    grd->nzn = grd->nzc + 1;
+    ////////////////
+    ///////////////////////////////
+
+    grd->dx = param->Lx / param->nxc;
+    grd->dy = param->Ly / param->nyc;
+    grd->dz = param->Lz / param->nzc;
+
+    // These are used in mover and interpolation from particles
+    grd->invVOL = (FPfield)1.0 / (grd->dx * grd->dy * grd->dz);
+    grd->invdx = (FPfield)1.0 / grd->dx;
+    grd->invdy = (FPfield)1.0 / grd->dy;
+    grd->invdz = (FPfield)1.0 / grd->dz;
+
+    // local grid dimensions and boundaries of active nodes
+    grd->xStart = 0.0;
+    grd->xEnd = param->Lx;
+
+    grd->yStart = 0.0;
+    grd->yEnd = param->Ly;
+
+    grd->zStart = 0.0;
+    grd->zEnd = param->Lz;
+
+    grd->Lx = param->Lx;
+    grd->Ly = param->Ly;
+    grd->Lz = param->Lz;
+
+    grd->PERIODICX = param->PERIODICX;
+    grd->PERIODICY = param->PERIODICY;
+    grd->PERIODICZ = param->PERIODICZ;
+
+    cudaMalloc(&d_grd, sizeof(grid));
+    cudaMemcpy(d_grd, grd, sizeof(grid), cudaMemcpyHostToDevice);
+
+    // allocate grid points - nodes
+    newArr3<FPfield>(&d_grd->XN, &d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
+    newArr3<FPfield>(&d_grd->YN, &d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
+    newArr3<FPfield>(&d_grd->ZN, &d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
+
+    dim3 blockSize(TPBD, TPBD, TPBD);
+    dim3 gridSize((grd->nxn + TPBD - 1) / TPBD, (grd->nyn + TPBD - 1) / TPBD, (grd->nzn + TPBD - 1) / TPBD);
+    setGrid<<<blockSize, gridSize>>>(d_grd);
+
+    free(grd);
+}
+
+#endif // GPU
+
+
 /** Set up the grid quantities */
 void printGrid(struct grid* grd)
 {
@@ -78,11 +156,29 @@ void printGrid(struct grid* grd)
 /** allocate electric and magnetic field */
 void grid_deallocate(struct grid* grd)
 {
-    
     delArr3(grd->XN, grd->nxn, grd->nyn);
     delArr3(grd->YN, grd->nxn, grd->nyn);
     delArr3(grd->ZN, grd->nxn, grd->nyn);
 }
+
+#ifdef GPU
+
+/** allocate electric and magnetic field */
+void grid_deallocate_device(struct grid ´d_grd)
+{
+    // E deallocate 3D arrays
+    FPfield*** d_XN, d_YN, d_ZN;
+    cudaMemcpy(&d_XN, &d_grd->XN, sizeof(FPfield), cudaDeviceToHost);
+    cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield), cudaDeviceToHost);
+    cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield), cudaDeviceToHost);
+
+    delArr3<<<1,1>>>(d_XN, d_grd->nxn, d_grd->nyn);
+    delArr3<<<1,1>>>(d_YN, d_grd->nxn, d_grd->nyn);
+    delArr3<<<1,1>>>(d_ZN, d_grd->nxn, d_grd->nyn);
+}
+
+#endif // GPU
+
 
 
 /** interpolation Node to Center */
