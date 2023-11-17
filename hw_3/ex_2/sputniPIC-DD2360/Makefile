@@ -1,12 +1,13 @@
 # From https://x.momo86.net/?p=29
 
-CXX=g++
-CXXFLAGS=-std=c++11 -I./include -O3 -g -Xcompiler -Wall
+DEVICE=CPU
 
-TARGET=CPU
+CXX=g++
+CXXFLAGS=-std=c++11 -I./include -O3 -g -Xcompiler -Wall -D$(DEVICE)
+
 NVCC=nvcc
 ARCH=sm_61
-NVCCFLAGS= -I./include -arch=$(ARCH) -std=c++11 -O3 -g -Xcompiler -Wall --compiler-bindir=$(CXX) -D$(TARGET)
+NVCCFLAGS= -I./include -arch=$(ARCH) -std=c++11 -O3 -g -Xcompiler -Wall --compiler-bindir=$(CXX) -D$(DEVICE)
 
 SRCDIR=src
 SRCS=$(shell find $(SRCDIR) -name '*.cu' -o -name '*.cpp')
