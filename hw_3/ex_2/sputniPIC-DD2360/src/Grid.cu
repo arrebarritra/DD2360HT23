@@ -68,10 +68,10 @@ void setGrid(struct parameters* param, struct grid* grd)
 
 #ifdef GPU
 
-__global__ setGridCoords(grid* grd) {
-    i = blockDim.x * blockIdx.x + threadIdx.x;
-    j = blockDim.y * blockIdx.y + threadIdx.y;
-    k = blockDim.z * blockIdx.z + threadIdx.z;
+__global__ void setGridCoords(grid* grd) {
+    const int i = blockDim.x * blockIdx.x + threadIdx.x;
+    const int j = blockDim.y * blockIdx.y + threadIdx.y;
+    const int k = blockDim.z * blockIdx.z + threadIdx.z;
 
     // calculate the coordinates - Nodes
     grd->XN[i][j][k] = (FPfield)(grd->xStart + (i - 1) * grd->dx);
@@ -130,13 +130,13 @@ void setGrid_device(struct parameters* param, struct grid* d_grd)
     cudaMemcpy(d_grd, grd, sizeof(grid), cudaMemcpyHostToDevice);
 
     // allocate grid points - nodes
-    newArr3<FPfield>(&d_grd->XN, &d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
-    newArr3<FPfield>(&d_grd->YN, &d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
-    newArr3<FPfield>(&d_grd->ZN, &d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
+    newArr3<FPfield><<<1,1>>>(&d_grd->XN, &d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
+    newArr3<FPfield><<<1,1>>>(&d_grd->YN, &d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
+    newArr3<FPfield><<<1,1>>>(&d_grd->ZN, &d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
 
     dim3 blockSize(TPBD, TPBD, TPBD);
     dim3 gridSize((grd->nxn + TPBD - 1) / TPBD, (grd->nyn + TPBD - 1) / TPBD, (grd->nzn + TPBD - 1) / TPBD);
-    setGrid<<<blockSize, gridSize>>>(d_grd);
+    setGridCoords<<<blockSize, gridSize>>>(d_grd);
 
     free(grd);
 }
@@ -158,25 +158,23 @@ void printGrid(struct grid* grd)
 /** allocate electric and magnetic field */
 void grid_deallocate(struct grid* grd)
 {
-    delArr3_device<<<1,1>>>(grd->XN, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(grd->YN, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(grd->ZN, grd->nxn, grd->nyn);
+    delArr3(grd->XN, grd->nxn, grd->nyn);
+    delArr3(grd->YN, grd->nxn, grd->nyn);
+    delArr3(grd->ZN, grd->nxn, grd->nyn);
 }
 
 #ifdef GPU
 
-/** allocate electric and magnetic field */
-void grid_deallocate_device(struct grid ´d_grd)
-{
-    // E deallocate 3D arrays
-    FPfield*** d_XN, *** d_YN, *** d_ZN;
-    cudaMemcpy(&d_XN, &d_grd->XN, sizeof(FPfield), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield), cudaMemcpyDeviceToHost);
+__global__ void grid_deallocate_kernel(struct grid* grd) {
+    delArr3(grd->XN, grd->nxn, grd->nyn);
+    delArr3(grd->YN, grd->nxn, grd->nyn);
+    delArr3(grd->ZN, grd->nxn, grd->nyn);
+}
 
-    delArr3_device<<<1,1>>>(d_XN, d_grd->nxn, d_grd->nyn);
-    delArr3_device<<<1,1>>>(d_YN, d_grd->nxn, d_grd->nyn);
-    delArr3_device<<<1,1>>>(d_ZN, d_grd->nxn, d_grd->nyn);
+/** allocate electric and magnetic field */
+void grid_deallocate_device(struct grid* d_grd)
+{
+    grid_deallocate_kernel<<<1,1>>>(d_grd);
 }
 
 #endif // GPU

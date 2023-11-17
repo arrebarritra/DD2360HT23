@@ -120,7 +120,7 @@ void particle_allocate_device(struct parameters* param, struct particles* d_part
     cudaMemcpy(d_part, part, sizeof(particles), cudaMemcpyHostToDevice);
     delete part;
 
-    FPpart* d_x, d_y, d_z, d_u, d_v, d_w;
+    FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
     // allocate particles on GPU
@@ -147,7 +147,7 @@ void particle_allocate_device(struct parameters* param, struct particles* d_part
 void particle_deallocate_device(struct particles* d_part)
 {
     // deallocate particle variables
-    FPpart* d_x, d_y, d_z, d_u, d_v, d_w;
+    FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
     cudaMemcpy(&d_x, &(d_part->x), sizeof(FPpart*), cudaMemcpyDeviceToHost);
@@ -171,7 +171,7 @@ void particle_synchronize_host(struct particles* h_part, struct particles* d_par
     cudaMemcpy(h_part, d_part, sizeof(particles), cudaMemcpyDeviceToHost);
     long npmax = h_part->npmax;
 
-    FPpart* d_x, d_y, d_z, d_u, d_v, d_w;
+    FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
     cudaMemcpy(&d_x, &(d_part->x), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
@@ -194,7 +194,7 @@ void particle_synchronize_host(struct particles* h_part, struct particles* d_par
 void particle_synchronize_device(struct particles* h_part, struct particles* d_part) {
     long npmax = h_part->npmax;
 
-    FPpart* d_x, d_y, d_z, d_u, d_v, d_w;
+    FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
     cudaMemcpy(&d_x, &(d_part->x), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
@@ -545,7 +545,7 @@ void interpP2G(struct particles* part, struct interpDensSpecies* ids, struct gri
 
 #define TPB 32
 
-__global__ mover_PC_kernel(struct particles* part, struct EMField* field, struct grid* grd, struct parameters* param) {
+__global__ void mover_PC_kernel(struct particles* part, struct EMfield* field, struct grid* grd, struct parameters* param) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     // auxiliary variables
@@ -702,12 +702,18 @@ __global__ mover_PC_kernel(struct particles* part, struct EMField* field, struct
 int mover_PC(struct particles* d_part, struct EMfield* d_field, struct grid* d_grd, struct parameters* d_param)
 {
     // print species and subcycling
-    std::cout << "***  MOVER with SUBCYCLYING " << param->n_sub_cycles << " - species " << part->species_ID << " ***" << std::endl;
+    int n_sub_cycles, species_ID;
+    long nop;
+    cudaMemcpy(&n_sub_cycles, &d_param->n_sub_cycles, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&species_ID, &d_part->species_ID, sizeof(int), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&nop, &d_part->nop, sizeof(long), cudaMemcpyDeviceToHost);
+
+    std::cout << "***  MOVER with SUBCYCLYING " << n_sub_cycles << " - species " << species_ID << " ***" << std::endl;
 
     // start subcycling
     dim3 blockSize(TPB);
-    dim3 gridSize((part->nop + TPB - 1) / TPB);
-    for (int i_sub = 0; i_sub < part->n_sub_cycles; i_sub++) {
+    dim3 gridSize((nop + TPB - 1) / TPB);
+    for (int i_sub = 0; i_sub < n_sub_cycles; i_sub++) {
         // move each particle with new fields
         mover_PC_kernel<<<gridSize, blockSize>>>(d_part, d_field, d_grd, d_param);
     } // end of subcycling
@@ -715,7 +721,7 @@ int mover_PC(struct particles* d_part, struct EMfield* d_field, struct grid* d_g
     return(0); // exit succcesfully
 } // end of the mover
 
-__global__ interpP2G_kernel(struct particles* part, struct interpDensSpecies* ids, struct grid* grd) {
+__global__ void interpP2G_kernel(struct particles* part, struct interpDensSpecies* ids, struct grid* grd) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
 
     // arrays needed for interpolation

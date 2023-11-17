@@ -76,8 +76,8 @@ void interpP2G(struct particles*, struct interpDensSpecies*, struct grid*);
 
 #ifdef GPU
 
-__global__ mover_PC_kernel(struct particles* part, struct EMField* field, struct grid* grd, struct parameters* param);
-__global__ interpP2G_kernel(struct particles* part, struct interpDensSpecies* ids, struct grid* grd);
+__global__ void mover_PC_kernel(struct particles* part, struct EMField* field, struct grid* grd, struct parameters* param);
+__global__ void interpP2G_kernel(struct particles* part, struct interpDensSpecies* ids, struct grid* grd);
 
 #endif // GPU
 

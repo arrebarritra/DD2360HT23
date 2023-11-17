@@ -89,45 +89,31 @@ void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpec
     newArr3<FPinterp><<<1,1>>>(&d_ids->pzz, &d_ids->pzz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
 }
 
-/** deallocate interpolated densities per species */
-void interp_dens_species_deallocate_device(struct grid* grd, struct interpDensSpecies* d_ids) {
-    
-    FPinterp* d_rhon, d_rhoc;
-    FPinterp* d_Jx, d_Jy, d_Jz;
-    FPinterp* d_pxx, d_pxy, d_pxz, d_pyy, d_pyz, d_pzz;
-
-    cudaMemcpy(&d_rhon, &d_ids->rhon, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_rhoc, &d_ids->rhoc, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_Jx, &d_ids->Jx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_Jy, &d_ids->Jy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_Jz, &d_ids->Jz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pxx, &d_ids->pxx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pxy, &d_ids->pxy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pxz, &d_ids->pxz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pyy, &d_ids->pyy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pyz, &d_ids->pyz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_pzz, &d_ids->pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-
+__global__ void interp_dens_species_deallocate_kernel(struct grid* grd, struct interpDensSpecies* ids) {
     // deallocate 3D arrays
-    delArr3_device<<<1,1>>>(d_rhon, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_rhoc, grd->nxc, grd->nyc);
+    delArr3(ids->rhon, grd->nxn, grd->nyn);
+    delArr3(ids->rhoc, grd->nxc, grd->nyc);
     // deallocate 3D arrays: J - current
-    delArr3_device<<<1,1>>>(d_Jx, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_Jy, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_Jz, grd->nxn, grd->nyn);
+    delArr3(ids->Jx, grd->nxn, grd->nyn);
+    delArr3(ids->Jy, grd->nxn, grd->nyn);
+    delArr3(ids->Jz, grd->nxn, grd->nyn);
     // deallocate 3D arrays: pressure
-    delArr3_device<<<1,1>>>(d_pxx, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_pxy, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_pxz, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_pyy, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_pyz, grd->nxn, grd->nyn);
-    delArr3_device<<<1,1>>>(d_pzz, grd->nxn, grd->nyn);
+    delArr3(ids->pxx, grd->nxn, grd->nyn);
+    delArr3(ids->pxy, grd->nxn, grd->nyn);
+    delArr3(ids->pxz, grd->nxn, grd->nyn);
+    delArr3(ids->pyy, grd->nxn, grd->nyn);
+    delArr3(ids->pyz, grd->nxn, grd->nyn);
+    delArr3(ids->pzz, grd->nxn, grd->nyn);
+}
 
+/** deallocate interpolated densities per species */
+void interp_dens_species_deallocate_device(struct grid* d_grd, struct interpDensSpecies* d_ids) {    
+    interp_dens_species_deallocate_kernel<<<1,1>>>(d_grd, d_ids);
 }
 
 void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
 
-    cudaMemcpy(d_ids, ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_ids, h_ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
 
     FPinterp* d_rhon, * d_rhoc;
     FPinterp* d_Jx, * d_Jy, * d_Jz;
@@ -145,22 +131,22 @@ void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struc
     cudaMemcpy(&d_pyz, &d_ids->pyz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_pzz, &d_ids->pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(ids->rhon, d_rhon, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->rhoc, d_rhoc, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->Jx, d_Jx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->Jy, d_Jy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->Jz, d_Jz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pxx, d_pxx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pxy, d_pxy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pxz, d_pxz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pyy, d_pyy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pyz, d_pyz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
-    cudaMemcpy(ids->pzz, d_pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->rhon, d_rhon, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->rhoc, d_rhoc, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->Jx, d_Jx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->Jy, d_Jy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->Jz, d_Jz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pxx, d_pxx, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pxy, d_pxy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pxz, d_pxz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pyy, d_pyy, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pyz, d_pyz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids->pzz, d_pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
 }
 void interp_dens_species_synchronize_device(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
 
-    cudaMemcpy(ids, d_ids, sizeof(interpDensSpecies), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_ids, d_ids, sizeof(interpDensSpecies), cudaMemcpyDeviceToHost);
 
     FPinterp* d_rhon, * d_rhoc;
     FPinterp* d_Jx, * d_Jy, * d_Jz;
@@ -178,17 +164,17 @@ void interp_dens_species_synchronize_device(struct interpDensSpecies* h_ids, str
     cudaMemcpy(&d_pyz, &d_ids->pyz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_pzz, &d_ids->pzz, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(d_rhon, ids->rhon, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_rhoc, ids->rhoc, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_Jx, ids->Jx, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_Jy, ids->Jy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_Jz, ids->Jz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pxx, ids->pxx, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pxy, ids->pxy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pxz, ids->pxz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pyy, ids->pyy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pyz, ids->pyz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_pzz, ids->pzz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_rhon, h_ids->rhon, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_rhoc, h_ids->rhoc, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Jx, h_ids->Jx, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Jy, h_ids->Jy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_Jz, h_ids->Jz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pxx, h_ids->pxx, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pxy, h_ids->pxy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pxz, h_ids->pxz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pyy, h_ids->pyy, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pyz, h_ids->pyz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_pzz, h_ids->pzz, sizeof(FPinterp*), cudaMemcpyHostToDevice);
 
 }
 
