@@ -7,7 +7,7 @@ CXX=g++
 CXXFLAGS=-std=c++11 -I./include -O3 -g -Xcompiler -Wall -D$(DEVICE)
 
 ifeq ($(DEBUG), 1)
-    CXXFLAGS += -DDEBUG -g
+    CXXFLAGS += -DDEBUG -g -G
 endif
 
 NVCC=nvcc

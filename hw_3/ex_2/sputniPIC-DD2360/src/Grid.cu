@@ -73,6 +73,11 @@ __global__ void setGridCoords(grid* grd) {
     const int j = blockDim.y * blockIdx.y + threadIdx.y;
     const int k = blockDim.z * blockIdx.z + threadIdx.z;
 
+    if (i >= grd->nxn ||
+        j >= grd->nyn ||
+        k >= grd->nzn)
+        return;
+
     // calculate the coordinates - Nodes
     grd->XN[i][j][k] = (FPfield)(grd->xStart + (i - 1) * grd->dx);
     grd->YN[i][j][k] = (FPfield)(grd->yStart + (j - 1) * grd->dy);

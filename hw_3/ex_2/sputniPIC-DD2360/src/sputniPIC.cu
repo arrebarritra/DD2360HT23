@@ -80,9 +80,8 @@ int main(int argc, char **argv){
     // per species
     interpDensSpecies *ids = new interpDensSpecies[param.ns];
 #ifdef GPU
-    interpDensSpecies *d_ids[param.ns];
+    interpDensSpecies **d_ids = new interpDensSpecies*[param.ns];
 #endif // GPU
-
 
 
     for (int is = 0; is < param.ns; is++) {
@@ -101,7 +100,7 @@ int main(int argc, char **argv){
     particles *part = new particles[param.ns];
 
 #ifdef GPU    
-    particles *d_part[param.ns];
+    particles **d_part = new particles*[param.ns];
 #endif // GPU
 
     // allocation
@@ -109,7 +108,7 @@ int main(int argc, char **argv){
         particle_allocate(&param,&part[is],is);
 
 #ifdef GPU
-        particle_allocate_device(d_param, d_part[is], is);
+        particle_allocate_device(&param, d_part[is], is);
 #endif // GPU
     }
     

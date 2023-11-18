@@ -87,6 +87,9 @@ void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpec
     newArr3<FPinterp><<<1,1>>>(&d_ids->pyz, &d_ids->pyz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pzz: 10
     newArr3<FPinterp><<<1,1>>>(&d_ids->pzz, &d_ids->pzz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+
+    free(ids);
+
 }
 
 __global__ void interp_dens_species_deallocate_kernel(struct grid* grd, struct interpDensSpecies* ids) {
