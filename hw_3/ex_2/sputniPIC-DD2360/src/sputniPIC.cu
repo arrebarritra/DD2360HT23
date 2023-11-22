@@ -160,9 +160,9 @@ int main(int argc, char **argv){
 #ifndef GPU
             interpP2G(&part[is], &ids[is], &grd);
 #else
-            interp_dens_species_synchronize_device(&ids[is], d_ids[is]);
+            interp_dens_species_synchronize_device(&grd, &ids[is], d_ids[is]);
             interpP2G(d_part[is], d_ids[is], d_grd);
-            interp_dens_species_synchronize_host(&ids[is], d_ids[is]);            
+            interp_dens_species_synchronize_host(&grd, &ids[is], d_ids[is]);            
 #endif // GPU
         }
 
