@@ -138,9 +138,9 @@ void setGrid_device(struct parameters* param, struct grid** p_d_grd)
     // allocate grid points - nodes
     FPfield ***d_XN, ***d_YN, ***d_ZN;
 
-    d_XN = newArr3<FPfield>(&d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
-    d_YN = newArr3<FPfield>(&d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
-    d_ZN = newArr3<FPfield>(&d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_XN = newArr3_device<FPfield>(&d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_YN = newArr3_device<FPfield>(&d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_ZN = newArr3_device<FPfield>(&d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
 
     cudaMemcpy(&d_grd->XN, &d_XN, sizeof(FPfield***), cudaMemcpyHostToDevice);
     cudaMemcpy(&d_grd->YN, &d_YN, sizeof(FPfield***), cudaMemcpyHostToDevice);
