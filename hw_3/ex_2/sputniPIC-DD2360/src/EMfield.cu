@@ -46,9 +46,9 @@ void field_allocate_device(struct grid* grd, struct EMfield** p_d_field) {
 
     // B on nodes
     FPfield ***d_Bxn, ***d_Byn, ***d_Bzn;
-    d_Bxn = newArr3_device<FPfield>(&d_field->Bxn, &d_field->Bxn_flat, grd->nxn, grd->nyn, grd->nzn);
-    d_Byn = newArr3_device<FPfield>(&d_field->Byn, &d_field->Byn_flat, grd->nxn, grd->nyn, grd->nzn);
-    d_Bzn = newArr3_device<FPfield>(&d_field->Bzn, &d_field->Bzn_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_Bxn = newArr3_device<FPfield>(&d_field->Bxn_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_Byn = newArr3_device<FPfield>(&d_field->Byn_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_Bzn = newArr3_device<FPfield>(&d_field->Bzn_flat, grd->nxn, grd->nyn, grd->nzn);
 
     cudaMemcpy(&d_field->Bxn, &d_Bxn, sizeof(FPfield***), cudaMemcpyHostToDevice);
     cudaMemcpy(&d_field->Byn, &d_Byn, sizeof(FPfield***), cudaMemcpyHostToDevice);
