@@ -72,26 +72,26 @@ void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpec
 
     // allocate 3D arrays
     // rho: 1
-    newArr3<FPinterp><<<1,1>>>(&d_ids->rhon, &d_ids->rhon_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
-    newArr3<FPinterp><<<1,1>>>(&d_ids->rhoc, &d_ids->rhoc_flat, grd->nxc, grd->nyc, grd->nzc); // center
+    d_rhon = newArr3<FPinterp><<<1,1>>>(&d_ids->rhon_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_rhoc = newArr3<FPinterp><<<1,1>>>(&d_ids->rhoc_flat, grd->nxc, grd->nyc, grd->nzc); // center
     // Jx: 2
-    newArr3<FPinterp><<<1,1>>>(&d_ids->Jx, &d_ids->Jx_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_Jx = newArr3<FPinterp><<<1,1>>>(&d_ids->Jx_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Jy: 3
-    newArr3<FPinterp><<<1,1>>>(&d_ids->Jy, &d_ids->Jy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_Jy = newArr3<FPinterp><<<1,1>>>(&d_ids->Jy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Jz: 4
-    newArr3<FPinterp><<<1,1>>>(&d_ids->Jz, &d_ids->Jz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_Jz = newArr3<FPinterp><<<1,1>>>(&d_ids->Jz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pxx: 5
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pxx, &d_ids->pxx_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pxx = newArr3<FPinterp><<<1,1>>>(&d_ids->pxx_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pxy: 6
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pxy, &d_ids->pxy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pxy = newArr3<FPinterp><<<1,1>>>(&d_ids->pxy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pxz: 7
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pxz, &d_ids->pxz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pxz = newArr3<FPinterp><<<1,1>>>(&d_ids->pxz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pyy: 8
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pyy, &d_ids->pyy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pyy = newArr3<FPinterp><<<1,1>>>(&d_ids->pyy_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pyz: 9
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pyz, &d_ids->pyz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pyz = newArr3<FPinterp><<<1,1>>>(&d_ids->pyz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
     // Pzz: 10
-    newArr3<FPinterp><<<1,1>>>(&d_ids->pzz, &d_ids->pzz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
+    d_pzz = newArr3<FPinterp><<<1,1>>>(&d_ids->pzz_flat, grd->nxn, grd->nyn, grd->nzn); // nodes
 
     cudaMemcpy(&d_ids->rhon, &d_rhon, sizeof(FPinterp***), cudaMemcpyHostToDevice);
     cudaMemcpy(&d_ids->rhoc, &d_rhoc, sizeof(FPinterp***), cudaMemcpyHostToDevice);
@@ -143,7 +143,7 @@ void interp_dens_species_deallocate_device(struct interpDensSpecies* d_ids) {
     delArray3_device(d_pzz);
 }
 
-void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
+void interp_dens_species_synchronize_host(struct grid* grd, struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
 
     cudaMemcpy(d_ids, h_ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
 
@@ -176,7 +176,7 @@ void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struc
     cudaMemcpy(h_ids->pzz_flat, d_pzz_flat, sizeof(FPinterp) * grd->nxn * grd->nyn * grd->nzn, cudaMemcpyDeviceToHost);
 
 }
-void interp_dens_species_synchronize_device(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
+void interp_dens_species_synchronize_device(struct grid* grd, struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
 
     cudaMemcpy(h_ids, d_ids, sizeof(interpDensSpecies), cudaMemcpyDeviceToHost);
 

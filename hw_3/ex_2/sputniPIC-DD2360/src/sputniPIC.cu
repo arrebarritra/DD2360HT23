@@ -117,7 +117,7 @@ int main(int argc, char **argv){
 #ifdef GPU
     for (int is = 0; is < param.ns; is++) {
         particle_synchronize_device(&part[is], d_part[is]);
-        interp_dens_species_synchronize_device(&ids[is], d_ids[is]);
+        interp_dens_species_synchronize_device(&grd, &ids[is], d_ids[is]);
     }
     field_synchronize_device(&grd, &field, d_field);
 #endif // GPU
