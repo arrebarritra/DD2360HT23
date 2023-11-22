@@ -185,9 +185,9 @@ void grid_deallocate_device(struct grid* d_grd)
     cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield***), cudaMemcpyHostToDevice);
     cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield***), cudaMemcpyHostToDevice);
 
-    delArr3_device(d_XN);
-    delArr3_device(d_YN);
-    delArr3_device(d_ZN);
+    delArray3_device(d_XN);
+    delArray3_device(d_YN);
+    delArray3_device(d_ZN);
 }
 
 #endif // GPU

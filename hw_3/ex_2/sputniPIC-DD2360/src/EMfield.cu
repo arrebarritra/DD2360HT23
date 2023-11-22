@@ -63,9 +63,9 @@ void field_deallocate_device(struct EMfield* d_field) {
     cudaMemcpy(&d_Ey, &d_field->Ey, sizeof(FPfield***), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Ez, &d_field->Ez, sizeof(FPfield***), cudaMemcpyDeviceToHost);
 
-    delArr3_device(d_Ex);
-    delArr3_device(d_Ey);
-    delArr3_device(d_Ez);
+    delArray3_device(d_Ex);
+    delArray3_device(d_Ey);
+    delArray3_device(d_Ez);
 
     // B deallocate 3D arrays
     FPfield*** d_Bxn, *** d_Byn, *** d_Bzn;
@@ -73,9 +73,9 @@ void field_deallocate_device(struct EMfield* d_field) {
     cudaMemcpy(&d_Byn, &d_field->Byn, sizeof(FPfield***), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Bzn, &d_field->Bzn, sizeof(FPfield***), cudaMemcpyDeviceToHost);
 
-    delArr3_device(d_Bxn);
-    delArr3_device(d_Byn);
-    delArr3_device(d_Bzn);
+    delArray3_device(d_Bxn);
+    delArray3_device(d_Byn);
+    delArray3_device(d_Bzn);
 }
 
 /** synchronize */
