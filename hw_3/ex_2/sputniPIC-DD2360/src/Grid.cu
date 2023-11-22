@@ -86,7 +86,7 @@ __global__ void setGridCoords(grid* grd) {
 }
 
 /** Set up the grid quantities */
-void setGrid_device(struct parameters* param, struct grid* d_grd)
+void setGrid_device(struct parameters* param, struct grid** p_d_grd)
 {
     grid* grd = new grid;
 
@@ -131,7 +131,8 @@ void setGrid_device(struct parameters* param, struct grid* d_grd)
     grd->PERIODICY = param->PERIODICY;
     grd->PERIODICZ = param->PERIODICZ;
 
-    cudaMalloc(&d_grd, sizeof(grid));
+    cudaMalloc(p_d_grd, sizeof(grid));
+    grid* d_grd = *p_d_grd;
     cudaMemcpy(d_grd, grd, sizeof(grid), cudaMemcpyHostToDevice);
 
     // allocate grid points - nodes

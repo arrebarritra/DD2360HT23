@@ -36,7 +36,7 @@ void field_deallocate(struct grid*, struct EMfield*);
 #ifdef GPU
 
 /** allocate electric and magnetic field */
-void field_allocate_device(struct grid*, struct EMfield*);
+void field_allocate_device(struct grid*, struct EMfield**);
 
 /** deallocate electric and magnetic field */
 __global__ void field_deallocate_kernel(struct grid* grd, struct EMfield* field);

@@ -60,7 +60,7 @@ void particle_deallocate(struct particles*);
 #ifdef GPU
 
 /** (de)allocate */
-void particle_allocate_device(struct parameters*, struct particles*, int);
+void particle_allocate_device(struct parameters*, struct particles**, int);
 void particle_deallocate_device(struct particles*);
 /** synchronize */
 void particle_synchronize_host(struct particles*, struct particles*);

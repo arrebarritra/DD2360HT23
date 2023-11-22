@@ -38,7 +38,7 @@ void interp_dens_species_deallocate(struct grid* grd, struct interpDensSpecies* 
 #ifdef GPU
 
 /** allocated interpolated densities per species */
-void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies* d_ids, int is);
+void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies** p_d_ids, int is);
 
 /** deallocate interpolated densities per species */
 __global__ void interp_dens_species_deallocate_kernel(struct grid* grd, struct interpDensSpecies* ids);

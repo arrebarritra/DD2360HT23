@@ -75,7 +75,7 @@ void particle_deallocate(struct particles* part)
 
 #ifdef GPU
 /** allocate particle arrays on GPU */
-void particle_allocate_device(struct parameters* param, struct particles* d_part, int is)
+void particle_allocate_device(struct parameters* param, struct particles** p_d_part, int is)
 {
     struct particles* part = new particles;
     // set species ID
@@ -116,7 +116,8 @@ void particle_allocate_device(struct parameters* param, struct particles* d_part
     part->vth = (FPpart)param->vth[is];
     part->wth = (FPpart)param->wth[is];
 
-    cudaMalloc(&d_part, sizeof(particles));
+    cudaMalloc(p_d_part, sizeof(particles));
+    particles* d_part = *p_d_part;
     cudaMemcpy(d_part, part, sizeof(particles), cudaMemcpyHostToDevice);
     delete part;
 

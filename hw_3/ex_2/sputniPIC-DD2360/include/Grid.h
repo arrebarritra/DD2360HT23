@@ -67,7 +67,7 @@ void setGrid(struct parameters*, struct grid*);
 #ifdef GPU
 #define TPBD 16
 __global__ void setGridCoords(grid* grd);
-void setGrid_device(struct parameters*, struct grid*);
+void setGrid_device(struct parameters*, struct grid**);
 #endif // GPU
 
 

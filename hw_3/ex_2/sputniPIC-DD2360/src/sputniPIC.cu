@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     setGrid(&param, &grd);
 #ifdef GPU
     grid* d_grd;
-    setGrid_device(&param, d_grd);
+    setGrid_device(&param, &d_grd);
 #endif // GPU
 
     
@@ -69,7 +69,7 @@ int main(int argc, char **argv){
 
 #ifdef GPU
     EMfield* d_field;
-    field_allocate_device(&grd, d_field);
+    field_allocate_device(&grd, &d_field);
 #endif // GPU
 
     EMfield_aux field_aux;
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
         interp_dens_species_allocate(&grd, &ids[is], is);
 
 #ifdef GPU
-        interp_dens_species_allocate_device(&grd, d_ids[is], is);
+        interp_dens_species_allocate_device(&grd, &d_ids[is], is);
 #endif // GPU
 
     }
@@ -108,7 +108,7 @@ int main(int argc, char **argv){
         particle_allocate(&param,&part[is],is);
 
 #ifdef GPU
-        particle_allocate_device(&param, d_part[is], is);
+        particle_allocate_device(&param, &d_part[is], is);
 #endif // GPU
     }
     

@@ -30,8 +30,9 @@ void field_deallocate(struct grid* grd, struct EMfield* field)
 #ifdef GPU
 
 /** allocate electric and magnetic field */
-void field_allocate_device(struct grid* grd, struct EMfield* d_field) {
-    cudaMalloc(&d_field, sizeof(EMfield));
+void field_allocate_device(struct grid* grd, struct EMfield** p_d_field) {
+    cudaMalloc(p_d_field, sizeof(EMfield));
+    EMfield* d_field = *p_d_field;
 
     // E on nodes
     newArr3<FPfield><<<1,1>>>(&d_field->Ex, &d_field->Ex_flat, grd->nxn, grd->nyn, grd->nzn);

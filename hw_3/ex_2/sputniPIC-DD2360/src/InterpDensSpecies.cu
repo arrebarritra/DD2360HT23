@@ -56,13 +56,14 @@ void interp_dens_species_deallocate(struct grid* grd, struct interpDensSpecies* 
 #ifdef GPU
 
 /** allocated interpolated densities per species */
-void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies* d_ids, int is) {
+void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies** p_d_ids, int is) {
     interpDensSpecies* ids = new interpDensSpecies;
 
     // set species ID
     ids->species_ID = is;
 
-    cudaMalloc(&d_ids, sizeof(interpDensSpecies));
+    cudaMalloc(p_d_ids, sizeof(interpDensSpecies));
+    interpDensSpecies* d_ids = *p_d_ids;
     cudaMemcpy(d_ids, ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
 
     // allocate 3D arrays
