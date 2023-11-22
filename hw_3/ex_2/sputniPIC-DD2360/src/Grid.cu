@@ -136,9 +136,15 @@ void setGrid_device(struct parameters* param, struct grid** p_d_grd)
     cudaMemcpy(d_grd, grd, sizeof(grid), cudaMemcpyHostToDevice);
 
     // allocate grid points - nodes
-    newArr3<FPfield><<<1,1>>>(&d_grd->XN, &d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
-    newArr3<FPfield><<<1,1>>>(&d_grd->YN, &d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
-    newArr3<FPfield><<<1,1>>>(&d_grd->ZN, &d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
+    FPfield ***d_XN, ***d_YN, ***d_ZN;
+
+    d_XN = newArr3<FPfield>(&d_grd->XN_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_YN = newArr3<FPfield>(&d_grd->YN_flat, grd->nxn, grd->nyn, grd->nzn);
+    d_ZN = newArr3<FPfield>(&d_grd->ZN_flat, grd->nxn, grd->nyn, grd->nzn);
+
+    cudaMemcpy(&d_grd->XN, &d_XN, sizeof(FPfield***), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_grd->YN, &d_YN, sizeof(FPfield***), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_grd->ZN, &d_ZN, sizeof(FPfield***), cudaMemcpyHostToDevice);
 
     dim3 blockSize(TPBD, TPBD, TPBD);
     dim3 gridSize((grd->nxn + TPBD - 1) / TPBD, (grd->nyn + TPBD - 1) / TPBD, (grd->nzn + TPBD - 1) / TPBD);
@@ -167,20 +173,20 @@ void grid_deallocate(struct grid* grd)
     delArr3(grd->XN, grd->nxn, grd->nyn);
     delArr3(grd->YN, grd->nxn, grd->nyn);
     delArr3(grd->ZN, grd->nxn, grd->nyn);
-}
 
 #ifdef GPU
-
-__global__ void grid_deallocate_kernel(struct grid* grd) {
-    delArr3(grd->XN, grd->nxn, grd->nyn);
-    delArr3(grd->YN, grd->nxn, grd->nyn);
-    delArr3(grd->ZN, grd->nxn, grd->nyn);
-}
 
 /** allocate electric and magnetic field */
 void grid_deallocate_device(struct grid* d_grd)
 {
-    grid_deallocate_kernel<<<1,1>>>(d_grd);
+    FPfield ***d_XN, ***d_YN, ***d_ZN;
+    cudaMemcpy(&d_XN, &d_grd->XN, sizeof(FPfield***), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield***), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield***), cudaMemcpyHostToDevice);
+
+    delArr3_device(d_XN, grd->nxn, grd->nyn);
+    delArr3_device(d_YN, grd->nxn, grd->nyn);
+    delArr3_device(d_ZN, grd->nxn, grd->nyn);
 }
 
 #endif // GPU

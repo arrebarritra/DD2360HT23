@@ -79,7 +79,6 @@ void grid_deallocate(struct grid*);
 
 #ifdef GPU
 
-__global__ void grid_deallocate_kernel(struct grid* d_grd);
 void grid_deallocate_device(struct grid*);
 
 #endif // GPU
