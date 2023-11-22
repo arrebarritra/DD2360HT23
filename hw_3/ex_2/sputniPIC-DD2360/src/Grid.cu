@@ -173,6 +173,7 @@ void grid_deallocate(struct grid* grd)
     delArr3(grd->XN, grd->nxn, grd->nyn);
     delArr3(grd->YN, grd->nxn, grd->nyn);
     delArr3(grd->ZN, grd->nxn, grd->nyn);
+}
 
 #ifdef GPU
 
@@ -184,9 +185,9 @@ void grid_deallocate_device(struct grid* d_grd)
     cudaMemcpy(&d_YN, &d_grd->YN, sizeof(FPfield***), cudaMemcpyHostToDevice);
     cudaMemcpy(&d_ZN, &d_grd->ZN, sizeof(FPfield***), cudaMemcpyHostToDevice);
 
-    delArr3_device(d_XN, grd->nxn, grd->nyn);
-    delArr3_device(d_YN, grd->nxn, grd->nyn);
-    delArr3_device(d_ZN, grd->nxn, grd->nyn);
+    delArr3_device(d_XN);
+    delArr3_device(d_YN);
+    delArr3_device(d_ZN);
 }
 
 #endif // GPU

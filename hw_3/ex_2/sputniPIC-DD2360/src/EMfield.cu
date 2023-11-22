@@ -56,16 +56,16 @@ void field_allocate_device(struct grid* grd, struct EMfield** p_d_field) {
 }
 
 /** deallocate electric and magnetic field */
-void field_deallocate_device(struct grid* d_grd, struct EMfield* d_field) {    
+void field_deallocate_device(struct EMfield* d_field) {    
     // E deallocate 3D arrays
     FPfield ***d_Ex, ***d_Ey, ***d_Ez;
     cudaMemcpy(&d_Ex, &d_field->Ex, sizeof(FPfield***), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Ey, &d_field->Ey, sizeof(FPfield***), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Ez, &d_field->Ez, sizeof(FPfield***), cudaMemcpyDeviceToHost);
 
-    delArr3_device(d_Ex, grd->nxn, grd->nyn);
-    delArr3_device(d_Ey, grd->nxn, grd->nyn);
-    delArr3_device(d_Ez, grd->nxn, grd->nyn);
+    delArr3_device(d_Ex);
+    delArr3_device(d_Ey);
+    delArr3_device(d_Ez);
 
     // B deallocate 3D arrays
     FPfield*** d_Bxn, *** d_Byn, *** d_Bzn;
@@ -73,9 +73,9 @@ void field_deallocate_device(struct grid* d_grd, struct EMfield* d_field) {
     cudaMemcpy(&d_Byn, &d_field->Byn, sizeof(FPfield***), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Bzn, &d_field->Bzn, sizeof(FPfield***), cudaMemcpyDeviceToHost);
 
-    delArr3_device(d_Bxn, grd->nxn, grd->nyn);
-    delArr3_device(d_Byn, grd->nxn, grd->nyn);
-    delArr3_device(d_Bzn, grd->nxn, grd->nyn);
+    delArr3_device(d_Bxn);
+    delArr3_device(d_Byn);
+    delArr3_device(d_Bzn);
 }
 
 /** synchronize */

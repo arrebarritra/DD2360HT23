@@ -41,7 +41,7 @@ void interp_dens_species_deallocate(struct grid* grd, struct interpDensSpecies* 
 void interp_dens_species_allocate_device(struct grid* grd, struct interpDensSpecies** p_d_ids, int is);
 
 /** deallocate interpolated densities per species */
-void interp_dens_species_deallocate_device(struct grid* grd, struct interpDensSpecies* d_ids);
+void interp_dens_species_deallocate_device(struct interpDensSpecies* d_ids);
 
 /** synchronize */
 void interp_dens_species_synchronize_host(struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids);

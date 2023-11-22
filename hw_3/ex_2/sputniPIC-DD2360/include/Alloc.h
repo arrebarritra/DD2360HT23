@@ -331,31 +331,6 @@ inline void delArr4(type**** arr, size_t sz1, size_t sz2, size_t sz3)
 	delArray4<type>(arr);
 }
 
-//device
-template <class type>
-inline void delArr1_device(type* arr)
-{
-	delArray1_device<type>(arr);
-}
-
-template <class type>
-inline void delArr2_device(type** arr, size_t sz1)
-{
-	delArray2_device<type>(arr);
-}
-
-template <class type>
-inline void delArr3_device(type*** arr, size_t sz1, size_t sz2)
-{
-	delArray3_device<type>(arr);
-}
-
-template <class type>
-inline void delArr4_device(type**** arr, size_t sz1, size_t sz2, size_t sz3)
-{
-	delArray4_device<type>(arr);
-}
-
 #define newArr1(type, sz1) newArr1<type>(sz1)
 #define newArr(type,sz1,sz2) newArr2<type>(sz1, sz2)
 #define newArr2(type, sz1, sz2) newArr2<type>(sz1, sz2)
