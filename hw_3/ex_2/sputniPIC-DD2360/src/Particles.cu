@@ -125,8 +125,6 @@ void particle_allocate_device(struct parameters* param, struct particles** p_d_p
     FPinterp* d_q;
 
     // allocate particles on GPU
-    cudaMalloc(&d_part, sizeof(particles));
-
     cudaMalloc(&d_x, sizeof(FPpart) * npmax);
     cudaMalloc(&d_y, sizeof(FPpart) * npmax);
     cudaMalloc(&d_z, sizeof(FPpart) * npmax);
@@ -135,13 +133,13 @@ void particle_allocate_device(struct parameters* param, struct particles** p_d_p
     cudaMalloc(&d_w, sizeof(FPpart) * npmax);
     cudaMalloc(&d_q, sizeof(FPinterp) * npmax);
 
-    cudaMemcpy(&(d_part->x), &d_x, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->y), &d_y, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->z), &d_z, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->u), &d_u, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->v), &d_v, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->w), &d_w, sizeof(FPpart*), cudaMemcpyHostToDevice);
-    cudaMemcpy(&(d_part->q), &d_q, sizeof(FPinterp*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->x, &d_x, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->y, &d_y, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->z, &d_z, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->u, &d_u, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->v, &d_v, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->w, &d_w, sizeof(FPpart*), cudaMemcpyHostToDevice);
+    cudaMemcpy(&d_part->q, &d_q, sizeof(FPinterp*), cudaMemcpyHostToDevice);
 
 }
 
@@ -175,13 +173,13 @@ void particle_synchronize_host(struct particles* h_part, struct particles* d_par
     FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
-    cudaMemcpy(&d_x, &(d_part->x), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_y, &(d_part->y), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_z, &(d_part->z), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_u, &(d_part->u), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_v, &(d_part->v), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_w, &(d_part->w), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_q, &(d_part->q),sizeof(FPinterp*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_x, &d_part->x, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_y, &d_part->y, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_z, &d_part->z, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_u, &d_part->u, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_v, &d_part->v, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_w, &d_part->w, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_q, &d_part->q,sizeof(FPinterp*) * npmax, cudaMemcpyDeviceToHost);
 
     cudaMemcpy(h_part->x, d_x, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_part->y, d_y, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
@@ -198,13 +196,13 @@ void particle_synchronize_device(struct particles* h_part, struct particles* d_p
     FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
-    cudaMemcpy(&d_x, &(d_part->x), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_y, &(d_part->y), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_z, &(d_part->z), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_u, &(d_part->u), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_v, &(d_part->v), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_w, &(d_part->w), sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_q, &(d_part->q), sizeof(FPinterp*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_x, &d_part->x, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_y, &d_part->y, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_z, &d_part->z, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_u, &d_part->u, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_v, &d_part->v, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_w, &d_part->w, sizeof(FPpart*) * npmax, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_q, &d_part->q, sizeof(FPinterp*) * npmax, cudaMemcpyDeviceToHost);
 
     cudaMemcpy(d_part, h_part, sizeof(particles), cudaMemcpyHostToDevice);
     cudaMemcpy(d_x, h_part->x, sizeof(FPpart*) * npmax, cudaMemcpyHostToDevice);
