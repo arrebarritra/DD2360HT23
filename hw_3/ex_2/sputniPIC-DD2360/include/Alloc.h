@@ -146,11 +146,15 @@ inline type***** newArr5(type** in, size_t sz1, size_t sz2, size_t sz3, size_t s
 template <class type>
 inline type***** newArr5_device(type** in, size_t sz1, size_t sz2, size_t sz3, size_t sz4, size_t sz5)
 {
-	*in = newArr1_device<type>(sz1 * sz2 * sz3 * sz4 * sz5);
+	type* inptr = newArr1_device<type>(sz1 * sz2 * sz3 * sz4 * sz5);
+	cudaMemcpy(in, &inptr, sizeof(type*), cudaMemcpyHostToDevice);
 
 	type***** arr = newArr4_device<type*>(sz1, sz2, sz3, sz4);
-	type** arr2 = ***arr;
-	type* ptr = *in;
+	type** arr2, ***arr3, ****arr4;
+	cudaMemcpy(&arr4, arr, sizeof(type****), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&arr3, arr4, sizeof(type***), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&arr2, arr3, sizeof(type**), cudaMemcpyDeviceToHost);
+	type* ptr = inptr;
 	size_t szarr2 = sz1 * sz2 * sz3 * sz4;
 	for (size_t i = 0; i < szarr2; i++) {
 		cudaMemcpy(&arr2[i], &ptr, sizeof(type*), cudaMemcpyHostToDevice);
@@ -179,11 +183,14 @@ inline type**** newArr4(type** in, size_t sz1, size_t sz2, size_t sz3, size_t sz
 template <class type>
 inline type**** newArr4_device(type** in, size_t sz1, size_t sz2, size_t sz3, size_t sz4)
 {
-	*in = newArr1_device<type>(sz1 * sz2 * sz3 * sz4);
+	type* inptr = newArr1_device<type>(sz1 * sz2 * sz3 * sz4);
+	cudaMemcpy(in, &inptr, sizeof(type*), cudaMemcpyHostToDevice);
 
 	type**** arr = newArr3_device<type*>(sz1, sz2, sz3);
-	type** arr2 = **arr;
-	type* ptr = *in;
+	type** arr2, ***arr3;
+	cudaMemcpy(&arr3, arr, sizeof(type***), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&arr2, arr3, sizeof(type**), cudaMemcpyDeviceToHost);
+	type* ptr = inptr;
 	size_t szarr2 = sz1 * sz2 * sz3;
 	for (size_t i = 0; i < szarr2; i++) {
 		cudaMemcpy(&arr2[i], &ptr, sizeof(type*), cudaMemcpyHostToDevice);
@@ -211,11 +218,13 @@ inline type*** newArr3(type** in, size_t sz1, size_t sz2, size_t sz3)
 template <class type>
 inline type*** newArr3_device(type** in, size_t sz1, size_t sz2, size_t sz3)
 {
-	*in = newArr1_device<type>(sz1 * sz2 * sz3);
+	type* inptr = newArr1_device<type>(sz1 * sz2 * sz3);
+	cudaMemcpy(in, &inptr, sizeof(type*), cudaMemcpyHostToDevice);
 
 	type*** arr = newArr2_device<type*>(sz1, sz2);
-	type** arr2 = *arr;
-	type* ptr = *in;
+	type** arr2;
+	cudaMemcpy(&arr2, arr, sizeof(type**), cudaMemcpyDeviceToHost);
+	type* ptr = inptr;
 	size_t szarr2 = sz1 * sz2;
 	for (size_t i = 0; i < szarr2; i++) {
 		cudaMemcpy(&arr2[i], &ptr, sizeof(type*), cudaMemcpyHostToDevice);
@@ -242,10 +251,11 @@ inline type** newArr2(type** in, size_t sz1, size_t sz2)
 template <class type>
 inline type** newArr2_device(type** in, size_t sz1, size_t sz2)
 {
-	*in = newArr1_device<type>(sz1 * sz2);
+	type* inptr = newArr1_device<type>(sz1 * sz2);
+	cudaMemcpy(in, &inptr, sizeof(type*), cudaMemcpyHostToDevice);
 
 	type** arr = newArr1_device<type*>(sz1);
-	type* ptr = *in;
+	type* ptr = inptr;
 	for (size_t i = 0; i < sz1; i++) {
 		cudaMemcpy(&arr[i], &ptr, sizeof(type*), cudaMemcpyHostToDevice);
 		ptr += sz2;
