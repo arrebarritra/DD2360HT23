@@ -167,7 +167,6 @@ void particle_deallocate_device(struct particles* d_part)
 }
 
 void particle_synchronize_host(struct particles* h_part, struct particles* d_part) {
-    cudaMemcpy(h_part, d_part, sizeof(particles), cudaMemcpyDeviceToHost);
     long npmax = h_part->npmax;
 
     FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
@@ -546,6 +545,7 @@ void interpP2G(struct particles* part, struct interpDensSpecies* ids, struct gri
 
 __global__ void mover_PC_kernel(struct particles* part, struct EMfield* field, struct grid* grd, struct parameters* param) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= part->nop) return;
 
     // auxiliary variables
     FPpart dt_sub_cycling = (FPpart)param->dt / ((double)part->n_sub_cycles);
@@ -722,6 +722,7 @@ int mover_PC(struct particles* d_part, struct EMfield* d_field, struct grid* d_g
 
 __global__ void interpP2G_kernel(struct particles* part, struct interpDensSpecies* ids, struct grid* grd) {
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= part->nop) return;
 
     // arrays needed for interpolation
     FPpart weight[2][2][2];
