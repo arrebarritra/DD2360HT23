@@ -203,7 +203,6 @@ void particle_synchronize_device(struct particles* h_part, struct particles* d_p
     cudaMemcpy(&d_w, &d_part->w, sizeof(FPpart*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_q, &d_part->q, sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
-    cudaMemcpy(d_part, h_part, sizeof(particles), cudaMemcpyHostToDevice);
     cudaMemcpy(d_x, h_part->x, sizeof(FPpart) * npmax, cudaMemcpyHostToDevice);
     cudaMemcpy(d_y, h_part->y, sizeof(FPpart) * npmax, cudaMemcpyHostToDevice);
     cudaMemcpy(d_z, h_part->z, sizeof(FPpart) * npmax, cudaMemcpyHostToDevice);
