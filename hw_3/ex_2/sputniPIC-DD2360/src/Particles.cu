@@ -748,7 +748,7 @@ __global__ void interpP2G_kernel(struct particles* part, struct interpDensSpecie
     for (int ii = 0; ii < 2; ii++)
         for (int jj = 0; jj < 2; jj++)
             for (int kk = 0; kk < 2; kk++)
-                atomicAdd(&weight[ii][jj][kk], part->q[i] * xi[ii] * eta[jj] * zeta[kk] * grd->invVOL);
+                weight[ii][jj][kk] = part->q[i] * xi[ii] * eta[jj] * zeta[kk] * grd->invVOL;
 
     //////////////////////////
     // add charge density
