@@ -872,9 +872,11 @@ __global__ void interpP2G_kernel(struct particles* part, struct interpDensSpecie
 }
 
 /** Interpolation Particle --> Grid: This is for species */
-void interpP2G(struct particles* part, struct interpDensSpecies* ids, struct grid* grd)
+void interpP2G(struct particles* d_part, struct interpDensSpecies* d_ids, struct grid* d_grd)
 {
-    dim3 gridSize((part->nop + TPB - 1) / TPB);
-    interpP2G_kernel<<<gridSize, TPB>>>(part, ids, grd);
+    long nop;
+    cudaMemcpy(&nop, &d_part->nop, sizeof(long), cudaMemcpyDeviceToHost);
+    dim3 gridSize((nop + TPB - 1) / TPB);
+    interpP2G_kernel<<<gridSize, TPB>>>(d_part, d_ids, d_grd);
 }
 #endif
