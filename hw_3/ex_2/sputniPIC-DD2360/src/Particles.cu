@@ -173,12 +173,12 @@ void particle_synchronize_host(struct particles* h_part, struct particles* d_par
     FPpart* d_x, * d_y, * d_z, * d_u, * d_v, * d_w;
     FPinterp* d_q;
 
-    cudaMemcpy(&d_x, &d_part->x, sizeof(FPpart*) cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_y, &d_part->y, sizeof(FPpart*) cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_z, &d_part->z, sizeof(FPpart*) cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_u, &d_part->u, sizeof(FPpart*) cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_v, &d_part->v, sizeof(FPpart*) cudaMemcpyDeviceToHost);
-    cudaMemcpy(&d_w, &d_part->w, sizeof(FPpart*) cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_x, &d_part->x, sizeof(FPpart*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_y, &d_part->y, sizeof(FPpart*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_z, &d_part->z, sizeof(FPpart*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_u, &d_part->u, sizeof(FPpart*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_v, &d_part->v, sizeof(FPpart*), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&d_w, &d_part->w, sizeof(FPpart*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_q, &d_part->q,sizeof(FPinterp*), cudaMemcpyDeviceToHost);
 
     cudaMemcpy(h_part->x, d_x, sizeof(FPpart) * npmax, cudaMemcpyDeviceToHost);
