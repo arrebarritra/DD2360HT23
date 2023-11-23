@@ -144,9 +144,6 @@ void interp_dens_species_deallocate_device(struct interpDensSpecies* d_ids) {
 }
 
 void interp_dens_species_synchronize_host(struct grid* grd, struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
-
-    cudaMemcpy(d_ids, h_ids, sizeof(interpDensSpecies), cudaMemcpyHostToDevice);
-
     FPinterp* d_rhon_flat, * d_rhoc_flat;
     FPinterp* d_Jx_flat, * d_Jy_flat, * d_Jz_flat;
     FPinterp* d_pxx_flat, * d_pxy_flat, * d_pxz_flat, * d_pyy_flat, * d_pyz_flat, * d_pzz_flat;
@@ -177,9 +174,6 @@ void interp_dens_species_synchronize_host(struct grid* grd, struct interpDensSpe
 
 }
 void interp_dens_species_synchronize_device(struct grid* grd, struct interpDensSpecies* h_ids, struct interpDensSpecies* d_ids) {
-
-    cudaMemcpy(h_ids, d_ids, sizeof(interpDensSpecies), cudaMemcpyDeviceToHost);
-
     FPinterp* d_rhon_flat, * d_rhoc_flat;
     FPinterp* d_Jx_flat, * d_Jy_flat, * d_Jz_flat;
     FPinterp* d_pxx_flat, * d_pxy_flat, * d_pxz_flat, * d_pyy_flat, * d_pyz_flat, * d_pzz_flat;

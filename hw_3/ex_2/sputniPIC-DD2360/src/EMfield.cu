@@ -80,8 +80,6 @@ void field_deallocate_device(struct EMfield* d_field) {
 
 /** synchronize */
 void field_synchronize_host(struct grid* grd, struct EMfield* h_field, struct EMfield* d_field) {
-    cudaMemcpy(h_field, d_field, sizeof(EMfield), cudaMemcpyDeviceToHost);
-
     FPfield* d_Ex_flat, * d_Ey_flat, * d_Ez_flat;
     cudaMemcpy(&d_Ex_flat, &d_field->Ex_flat, sizeof(FPfield*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Ey_flat, &d_field->Ey_flat, sizeof(FPfield*), cudaMemcpyDeviceToHost);
@@ -102,8 +100,6 @@ void field_synchronize_host(struct grid* grd, struct EMfield* h_field, struct EM
 }
 
 void field_synchronize_device(struct grid* grd, struct EMfield* h_field, struct EMfield* d_field) {
-    cudaMemcpy(d_field, h_field, sizeof(EMfield), cudaMemcpyHostToDevice);
-
     FPfield* d_Ex_flat, * d_Ey_flat, * d_Ez_flat;
     cudaMemcpy(&d_Ex_flat, &d_field->Ex_flat, sizeof(FPfield*), cudaMemcpyDeviceToHost);
     cudaMemcpy(&d_Ey_flat, &d_field->Ey_flat, sizeof(FPfield*), cudaMemcpyDeviceToHost);
