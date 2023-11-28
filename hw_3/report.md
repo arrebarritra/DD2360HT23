@@ -56,7 +56,7 @@ documentclass: scrartcl
 
 1. **Describe the environment you used, what changes you made to the Makefile, and how you ran the simulation.**
 
-    I use a WSL2 Ubuntu environment within my Windows PC. I had to change the Makefile variable for the GPU architecture to `ARCH=sm_61` which corresponds to my GTX 1070 GPU architecture. I also created two variables in the Makefile, `DEVICE` and `DEBUG`, to make it easier to compile on either CPU or GPU and also in debug mode so I could use `cuda-gdb`. I could then run the executable with my chosen configuration.
+    I use a WSL2 Ubuntu environment within my Windows PC. I had to change the Makefile variable for the GPU architecture to `ARCH=sm_61` which corresponds to my GTX 1070 GPU architecture. I also created two variables in the Makefile, `DEVICE` and `DEBUG`, to make it easier to compile on either CPU or GPU and also in debug mode so I could use `cuda-gdb`. I could then run the executable with my chosen configuration. I also had to modify the build structure so that I could for instance quickly switch between the CPU and GPU build.
 
 2. **Describe your design of the GPU implementation of mover_PC() briefly.**
     
@@ -74,15 +74,61 @@ documentclass: scrartcl
 
     I used ParaView to visually compare the two implementations visually, and qualitatively there seemed to be no difference for both the `GEM_2D` and `GEM_3D` inputs.
 
-    I also compared the output values between the versions, to find the maximum difference between the results from the CPU and GPU.
+    I also compared the output values between the versions, to find the maximum difference between the results from the CPU and GPU. For `GEM_2D` we get:
 
-    ![Max discrepancy](img/gpu-discrepancy.png)
+    ```
+    B_10.vtk: loaded 98301 values
+    Max discrepancy: 0.0
 
-    We can see the difference is negligible, and comes down to floating point errors. There is no difference in the E and B file since they are constant and do not change from initialisation.
+    E_10.vtk: loaded 98301 values
+    Max discrepancy: 0.0
+
+    rhoe_10.vtk: loaded 32768 values
+    Max discrepancy: 1.0000000000287557e-07
+
+    rhoi_10.vtk: loaded 32768 values
+    Max discrepancy: 1.0000000000287557e-07
+
+    rho_net_10.vtk: loaded 32768 values
+    Max discrepancy: 1.040000000000112e-07
+
+    Overall max discrepancy: 1.040000000000112e-07
+    ```
+
+    We can see the difference is negligible, and comes down to floating point errors. There is no difference in the E and B file since they are constant and do not change after initialisation. Similarly for GEM_3D we get:
+
+    ```
+    ...
+
+    rho_net_6.vtk: loaded 524288 values
+    Max discrepancy: 1.0000000000287557e-07
+
+    E_10.vtk: loaded 1572861 values
+    Max discrepancy: 0.0
+
+    E_6.vtk: loaded 1572861 values
+    Max discrepancy: 0.0
+
+    B_9.vtk: loaded 1572861 values
+    Max discrepancy: 0.0
+
+    Overall max discrepancy: 1.0999999999934673e-07
+    ```
 
 4. **Compare the execution time of your GPU implementation with its CPU version.**
 
-    |     | GEM_2D | GEM_3D |
-    |-----|--------|--------|
-    | CPU |        |        |
-    | GPU |        |        |
+    Using the built in execution timer in the program we get the following execution time in seconds:
+
+    |     | GEM_2D  | GEM_3D  |
+    |-----|---------|---------|
+    | CPU | 48.3993 | 232.455 |
+    | GPU | 4.69184 | 65.8872 |
+
+    However, writing the result to disk is included in the timing, which feels a bit unfair. Especially given that the `GEM_3D` input saves large files to disk in every cycle. Therefore I modified the inputs and removed writing to disk for the purpose of performance measurements, and giving a more fair comparison of the running time between the implementations.
+
+    |     | GEM_2D  | GEM_3D  |
+    |-----|---------|---------|
+    | CPU | 46.9711 | 186.373 |
+    | GPU | 4.41544 | 14.776  |
+
+    For `GEM_2D` we obtain a 10.6 times speedup, and 12.6 times speedup.
