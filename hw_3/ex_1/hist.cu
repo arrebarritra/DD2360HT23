@@ -1,6 +1,10 @@
 
 #include <iostream>
+#include <fstream>
 #include <chrono>
+#include <ctime>  
+#include <sstream>
+#include <iomanip>
 #include <random>
 #include <string>
 
@@ -63,6 +67,24 @@ public:
   }
 };
 
+void saveres(unsigned int inputLength, unsigned int* hist){
+  auto now = std::chrono::system_clock::now();
+  auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+  std::stringstream fnss;
+  fnss << "res/hist-" << std::to_string(inputLength) << "-";
+  fnss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
+  fnss << ".txt";
+
+  std::ofstream f (fnss.str().c_str());
+  for(int i = 0; i < NUM_BINS; i++){
+    f << hist[i] << std::endl;
+  }
+  
+  f.close();
+  printf("Result saved to: %s\n", fnss.str().c_str());
+}
+
 int main(int argc, char **argv) {
   cudaFree(0);
 
@@ -76,6 +98,10 @@ int main(int argc, char **argv) {
   //@@ Insert code below to read in inputLength from args
   if (argc > 1)
     inputLength = std::stoi(argv[1]);
+  else{   
+    printf("Provide input length");
+    return;
+  }
   printf("The input length is %d\n", inputLength);
   
   //@@ Insert code below to allocate Host memory for input and output
@@ -140,8 +166,10 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (isCorrect)
+  if (isCorrect){
     printf("Correct\n");
+    saveres(inputLength, hostBins);
+  }
   else
     printf("CPU and GPU results do not match\n");
 
