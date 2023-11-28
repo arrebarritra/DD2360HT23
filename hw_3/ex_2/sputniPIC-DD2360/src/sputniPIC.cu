@@ -59,7 +59,7 @@ int main(int argc, char **argv){
     setGrid(&param, &grd);
 #ifdef GPU
     grid* d_grd;
-    setGrid_device(&param, d_grd);
+    setGrid_device(&param, &d_grd);
 #endif // GPU
 
     
@@ -69,7 +69,7 @@ int main(int argc, char **argv){
 
 #ifdef GPU
     EMfield* d_field;
-    field_allocate_device(&grd, d_field);
+    field_allocate_device(&grd, &d_field);
 #endif // GPU
 
     EMfield_aux field_aux;
@@ -80,16 +80,15 @@ int main(int argc, char **argv){
     // per species
     interpDensSpecies *ids = new interpDensSpecies[param.ns];
 #ifdef GPU
-    interpDensSpecies *d_ids[param.ns];
+    interpDensSpecies **d_ids = new interpDensSpecies*[param.ns];
 #endif // GPU
-
 
 
     for (int is = 0; is < param.ns; is++) {
         interp_dens_species_allocate(&grd, &ids[is], is);
 
 #ifdef GPU
-        interp_dens_species_allocate_device(&grd, d_ids[is], is);
+        interp_dens_species_allocate_device(&grd, &d_ids[is], is);
 #endif // GPU
 
     }
@@ -101,7 +100,7 @@ int main(int argc, char **argv){
     particles *part = new particles[param.ns];
 
 #ifdef GPU    
-    particles *d_part[param.ns];
+    particles **d_part = new particles*[param.ns];
 #endif // GPU
 
     // allocation
@@ -109,7 +108,7 @@ int main(int argc, char **argv){
         particle_allocate(&param,&part[is],is);
 
 #ifdef GPU
-        particle_allocate_device(d_param, d_part[is], is);
+        particle_allocate_device(&param, &d_part[is], is);
 #endif // GPU
     }
     
@@ -118,7 +117,7 @@ int main(int argc, char **argv){
 #ifdef GPU
     for (int is = 0; is < param.ns; is++) {
         particle_synchronize_device(&part[is], d_part[is]);
-        interp_dens_species_synchronize_device(&ids[is], d_ids[is]);
+        interp_dens_species_synchronize_device(&grd, &ids[is], d_ids[is]);
     }
     field_synchronize_device(&grd, &field, d_field);
 #endif // GPU
@@ -161,9 +160,9 @@ int main(int argc, char **argv){
 #ifndef GPU
             interpP2G(&part[is], &ids[is], &grd);
 #else
-            interp_dens_species_synchronize_device(&ids[is], d_ids[is]);
+            interp_dens_species_synchronize_device(&grd, &ids[is], d_ids[is]);
             interpP2G(d_part[is], d_ids[is], d_grd);
-            interp_dens_species_synchronize_host(&ids[is], d_ids[is]);            
+            interp_dens_species_synchronize_host(&grd, &ids[is], d_ids[is]);            
 #endif // GPU
         }
 
