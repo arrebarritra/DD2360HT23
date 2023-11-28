@@ -21,7 +21,7 @@ documentclass: scrartcl
 
     - Each thread reads its corresponding input data element from global memory
       - `num_elements` reads
-    - In each block all the bins in global memory updated
+    - Each block updates all the bins in global memory
       - up to `num_bins * gridSize` reads (a check is performed to reduce unnecessary atomic operations to reduce contention)
 
 4. **How many atomic operations are being performed by your kernel? Explain**
@@ -45,12 +45,12 @@ documentclass: scrartcl
 8. **For a input array of 1024 elements, profile with Nvidia Nsight and report Shared Memory Configuration Size and Achieved Occupancy. Did Nvsight report any potential performance issues?**
 
     ```
-    Shared Memory Configuration Size                                                 Kbyte                          32.77
-    ...                                                                                ...                            ...
-    Achieved Occupancy                                                                   %                          47.57
+    Shared Memory Configuration Size    Kbyte   32.77
+    ...                                 ...     ...
+    Achieved Occupancy                  %       47.57
     ```
 
-    No issues potential issues were reported by Nvsight.
+    No potential issues were reported by Nsight.
 
 # Exercise 2: A Particle Simulation Application
 
@@ -131,4 +131,4 @@ documentclass: scrartcl
     | CPU | 46.9711 | 186.373 |
     | GPU | 4.41544 | 14.776  |
 
-    For `GEM_2D` we obtain a 10.6 times speedup, and 12.6 times speedup.
+    For `GEM_2D` we obtain a 10.6 times speedup, and `GEM_3D` 12.6 times speedup.
