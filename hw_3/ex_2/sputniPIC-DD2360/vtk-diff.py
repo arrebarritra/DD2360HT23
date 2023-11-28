@@ -25,6 +25,7 @@ else:
 files1 = [f for f in os.listdir(folder1) if f[-4:]==".vtk"]
 files2 = [f for f in os.listdir(folder2) if f[-4:]==".vtk"]
 
+max_diffs = [] 
 for file in files1:
     if file in files2:
         dat1 = loadVTK(os.path.join(folder1, file))
@@ -33,4 +34,8 @@ for file in files1:
         assert(dat1.size == dat2.size)
         print(f"{file}: loaded {dat1.size} values")
         max_diff = np.max(np.abs(dat1 - dat2))
+        max_diffs.append(max_diff)
         print(f"Max discrepancy: {max_diff}\n")
+
+overall_max_discrepancy = np.max(max_diffs)
+print(f"Overall max discrepancy: {overall_max_discrepancy}")
