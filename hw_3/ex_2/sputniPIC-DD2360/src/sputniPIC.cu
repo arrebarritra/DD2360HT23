@@ -192,6 +192,11 @@ int main(int argc, char **argv){
     // deallocate field
     grid_deallocate(&grd);
     field_deallocate(&grd,&field);
+#ifdef GPU    
+    grid_deallocate_device(d_grd);  
+    field_deallocate_device(d_field);  
+#endif
+
     // interp
     interp_dens_net_deallocate(&grd,&idn);
     
@@ -199,6 +204,10 @@ int main(int argc, char **argv){
     for (int is=0; is < param.ns; is++){
         interp_dens_species_deallocate(&grd,&ids[is]);
         particle_deallocate(&part[is]);
+#ifdef GPU
+	interp_dens_species_deallocate_device(d_ids[is]);	
+	particle_deallocate_device(d_part[is]);
+#endif
     }
     
     

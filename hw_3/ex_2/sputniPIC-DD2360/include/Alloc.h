@@ -316,19 +316,25 @@ inline void delArray1_device(type* arr)
 template < class type >
 inline void delArray2_device(type** arr)
 {
-	delArray1_device(arr[0]); cudaFree(arr);
+	type* arr1;
+	cudaMemcpy(&arr1, arr, sizeof(type*), cudaMemcpyDeviceToHost); 
+       	delArray1_device(arr1); cudaFree(arr);
 }
 
 template < class type >
 inline void delArray3_device(type*** arr)
 {
-	delArray2_device(arr[0]); cudaFree(arr);
+	type** arr2;
+	cudaMemcpy(&arr2, arr, sizeof(type**), cudaMemcpyDeviceToHost);
+       	delArray2_device(arr2); cudaFree(arr);
 }
 
 template < class type >
 inline void delArray4_device(type**** arr)
 {
-	delArray3_device(arr[0]); cudaFree(arr);
+	type*** arr3;
+	cudaMemcpy(&arr3, arr, sizeof(type***), cudaMemcpyDeviceToHost);
+	delArray3_device(arr3); cudaFree(arr);
 }
 
 //
