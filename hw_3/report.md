@@ -11,22 +11,51 @@ documentclass: scrartcl
 
 1. **Describe all optimizations you tried regardless of whether you committed to them or abandoned them and whether they improved or hurt performance.**
 
-    The first optimisation I tried (after implementing a global memory version), was to keep the bins in shared memory, so each block had its local version. Then, I performed a reduction between the blocks, adding the local bins atomically to the global histogram. I let each thread within a block be responsible for adding a region of the bins, since the block size is always smaller than the number of bins (4096). This did not work unfortunately and increased the time initially. Using 1024 threads gave the best performance for the method, but the simple global memory method outperformed by around a factor of 2.
+    The first optimisation I tried (after implementing a global memory version), was to keep a local histogram in shared memory. Then, I performed a reduction between the blocks, adding the local bins atomically to the global histogram. I let each thread within a block be responsible for adding a region of the bins, since the max thread block size (1024) is smaller than the number of bins (4096). This did not work unfortunately and increased the time initially. Using 1024 threads gave the best performance for the method, but the simple global memory method outperformed by close to a factor of 2.
 
     To reduce contention in global memory I didn't perform the atomic add if a bin is empty. Even though it leads to branching it reduced the histogram kernel execution time.
 
-    Given that the shared histogram kernel was not performing better than the global one, I wanted to test whether it could be due to the GPU architecture. Therefore I tested it on both my machine with a GTC 1070 and in Google Colab with the Tesal T4, using an input length of `2^28 = 268435456`. I measured the time taken by the histogram kernel in ms:
+    Given that the shared histogram kernel was not performing better than the global one, I wanted to test whether it could be due to the GPU architecture. Therefore I tested it on both my machine with a GTX 1070 and in Google Colab with the Tesal T4, using an input length of `2^28 = 268435456`. I measured the time taken by the histogram kernel in ms:
 
     |        | GTX 1070  | Tesla T4  |
     |--------|-----------|-----------|
-    | Global |  14.485   |  32.551   |
-    | Shared |  28.068   |  45.390   |
+    | Global |  12.052   |  32.551   |
+    | Shared |  21.110   |  45.390   |
 
     The shared version still performs worse than the global one, although its relative performance to the global implementation is better on the Tesla T4. I think the reason the shared implementation performs poorly, or rather that the global version performs well, is that the bin count is so large that contention is minimal. Therefore there is more overhead when creating a shared memory version of the program.
 
+    I then simplified the way I fill the bins in the threads (threads need to fill up multiple bins since blockDim.x < NUM_BINS) from changing a contiguous portion as such:
+
+    ```
+    int bin_region_size = num_bins / blockDim.x;
+    int bin_fill_start = bin_region_size * threadIdx.x;
+    for (int i = bin_fill_start; i < bin_fill_start + bin_region_size; i++) {
+        ...
+    }
+    ```
+    
+    to filling bin elements at an interval of `stride`:
+
+    ```
+    int stride = blockDim.x;  
+    int i = threadIdx.x;
+    while (i < num_bins) {
+      ...
+      i += stride;
+    }
+    ```
+
+    Now, on the Tesla T4 the shared memory version actually performs better than the global one! It doesn't do so on the GTX 1070 though, but does perform slightly better than before. Here are the results in ms:
+
+    |                   | GTX 1070  | Tesla T4  |
+    |-------------------|-----------|-----------|
+    | Shared (improved) |  18.567   |  22.986   |
+
+    I'm not sure why the change doubled the speed for the Tesla T4, while there only is a minor improvement for the GTX 1070. It could be that it reduces the amount of cache misses, since the warps within a block are in sync and are accessing data from bins close to each other in shared memory.
+
 2. **Which optimizations you chose in the end and why?**
 
-    I stuck with the shared memory implementation for the purpose of the assignment, although it performs worse than the global memory one.
+    I stuck with the shared memory implementation and all the optimisations mentioned previously for the purpose of the assignment, even though it performs worse than the global memory one for GTX 1070.
 
 3. **How many global memory reads are being performed by your kernel? Explain**
 
