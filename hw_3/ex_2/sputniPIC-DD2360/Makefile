@@ -21,12 +21,12 @@ endif
 SRCDIR=src
 SRCS=$(shell find $(SRCDIR) -name '*.cu' -o -name '*.cpp')
 
-OBJDIR=src
+OBJDIR=bin/$(DEVICE)/DEBUG$(DEBUG)
 OBJS=$(subst $(SRCDIR),$(OBJDIR), $(SRCS))
 OBJS:=$(subst .cpp,.o,$(OBJS))
 OBJS:=$(subst .cu,.o,$(OBJS))
 
-BIN := ./bin
+BIN := ./$(OBJDIR)
 TARGET=sputniPIC.out
 
 all: dir $(BIN)/$(TARGET)
@@ -35,17 +35,20 @@ dir: ${BIN}
   
 ${BIN}:
 	mkdir -p $(BIN)
+	
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
 $(BIN)/$(TARGET): $(OBJS)
 	$(NVCC) $(NVCCFLAGS) $+ -o $@
 
-$(SRCDIR)/%.o: $(SRCDIR)/%.cu
+$(OBJDIR)/%.o: $(SRCDIR)/%.cu
 	$(NVCC) $(NVCCFLAGS) $< -c -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	[ -d $(OBJDIR) ] || mkdir $(OBJDIR)
+	[ -d $(OBJDIR) ] || mkdir -p $(OBJDIR)
 	$(NVCC) $(CXXFLAGS) $< -c -o $@
 
 clean:
 	rm -rf $(OBJS)
-	rm -rf $(TARGET)
+	rm -rf $(OBJDIR)/$(TARGET)
