@@ -15,7 +15,7 @@ documentclass: scrartcl
 
     To reduce contention in global memory I didn't perform the atomic add if a bin is empty. Even though it leads to branching it reduced the histogram kernel execution time.
 
-    Given that the shared histogram kernel was not performing better than the global one, I wanted to test whether it could be due to the GPU architecture. Therefore I tested it on both my machine with a GTX 1070 and in Google Colab with the Tesal T4, using an input length of `2^28 = 268435456`. I measured the time taken by the histogram kernel in ms:
+    Given that the shared histogram kernel was not performing better than the global one, I wanted to test whether it could be due to the GPU architecture. Therefore I tested it on both my machine with a GTX 1070 and in Google Colab with the Tesla T4, using an input length of `2^28 = 268435456`. I measured the time taken by the histogram kernel in ms:
 
     |        | GTX 1070  | Tesla T4  |
     |--------|-----------|-----------|
@@ -66,7 +66,7 @@ documentclass: scrartcl
 
 4. **How many atomic operations are being performed by your kernel? Explain**
 
-    Up to `num_bins * gridSize` atomic operations are performed by the kernel, as each block adds it's own local histogram to the global one. Atomic operations are avoided when bins are empty to reduce contention.
+    There are `num_elements` atomic operations per block performed on shared memory, when filling up the local histogram. Up to `num_bins * gridSize` atomic operations are performed on global memory by the kernel, as each block adds its own local histogram to the global one. Atomic operations are avoided when bins are empty to reduce contention.
 
 5. **How much shared memory is used in your code? Explain**
 
@@ -82,15 +82,17 @@ documentclass: scrartcl
 
     ![Histogram](img/hist.png)
 
-8. **For a input array of 1024 elements, profile with Nvidia Nsight and report Shared Memory Configuration Size and Achieved Occupancy. Did Nvsight report any potential performance issues?**
+    Note that the seeming gaps between the bins is a matplotlib rendering issue and not empty bins.
+
+8. **For a input array of 1024 elements, profile with Nvidia Nsight and report Shared Memory Configuration Size and Achieved Occupancy. Did Nsight report any potential performance issues?**
 
     ```
     Shared Memory Configuration Size    Kbyte   32.77
     ...                                 ...     ...
-    Achieved Occupancy                  %       47.57
+    Achieved Occupancy                  %       96.24
     ```
 
-    No potential issues were reported by Nsight.
+    Nsight reports that the low compute throughput (`51.71%`) can indicate latency issues. This is probably actually due to stalling from all the atomic operations.
 
 # Exercise 2: A Particle Simulation Application
 
@@ -102,7 +104,7 @@ documentclass: scrartcl
     
     I created a kernel for both `mover_PC` and `interP2G` for my port. Rather than doing all the allocation within the GPU versions before calling the kernel, I ported the allocation code for `particle`, `EMfield`, `grid`, `interpDensSpecies` and `parameters` to CUDA. That includes functions for performing synchronisation between the host and device.
     
-    The `part` structure only needs to be synced once, at the start of the program. This is because the particles are never directly accessed by the host code. Instead, when we are in the `interP2G` kernel we access the `part` struct on the device, and use that to update the `ids` values. This does need to be synced back to the host, as there are some host side function like `applyBCids` accessing. It also modifies the data, so it needs to be synced to device at the start of every cycle. The, `field`, `grid` and `param` structs are all constant, so only need to be synced once at the start.
+    The `part` structure only needs to be synced once, at the start of the program. This is because the particles are never directly accessed by the host code. Instead, when we are in the `interP2G` kernel we access the `part` struct on the device, and use that to update the `ids` values. This does need to be synced between the host and device in every cycle, as there are some host side function like `applyBCids` also accessing and modifying the data. The, `field`, `grid` and `param` structs are also all constant, so only need to be synced once at the start.
 
     For allocation, I needed to not only copy the structs, but perform a deep copy of all the data arrays that are pointed to in the flat arrays, and make sure the pointers on the device version of the struct point to the correct data.
 
@@ -114,7 +116,7 @@ documentclass: scrartcl
 
     I used ParaView to visually compare the two implementations visually, and qualitatively there seemed to be no difference for both the `GEM_2D` and `GEM_3D` inputs.
 
-    I also compared the output values between the versions, to find the maximum difference between the results from the CPU and GPU. For `GEM_2D` we get:
+    I also compared the output values between the versions, to find the maximum difference between the results from the CPU and GPU using a python script. For `GEM_2D` we get:
 
     ```
     B_10.vtk: loaded 98301 values
@@ -135,7 +137,7 @@ documentclass: scrartcl
     Overall max discrepancy: 1.040000000000112e-07
     ```
 
-    We can see the difference is negligible, and comes down to floating point errors. There is no difference in the E and B file since they are constant and do not change after initialisation. Similarly for GEM_3D we get:
+    We can see the difference is negligible, and comes down to floating point errors. There is no difference in the E and B file since they are not modified by the simulation after initialisation. Similarly for GEM_3D we get:
 
     ```
     ...
@@ -172,3 +174,13 @@ documentclass: scrartcl
     | GPU | 4.41544 | 14.776  |
 
     For `GEM_2D` we obtain a 10.6 times speedup, and `GEM_3D` 12.6 times speedup.
+
+    We can see a more detailed breakdown of the time (s) taken per cycle of different parts of the simulation:
+
+    |     | GEM_2D   |               | GEM_3D    |               |
+    |-----|----------|---------------|-----------|---------------|
+    |     | Mover    | Interpolation | Mover     | Interpolation |
+    | CPU | 18.6184  | 10.0372       | 3.77386   | 3.07842       |
+    | GPU | 0.225877 | 1.18395       | 0.0272981 | 0.169561      |
+
+    Here we can see that the mover component achieves up to 138 times speedup on the GPU. The interpolation component achieves up to 18 times speedup (this is actually because only the `interP2G` kernel is moved to the GPU, and the rest of the steps are still on the CPU).
