@@ -11,11 +11,22 @@ documentclass: scrartcl
 
 1. **Describe all optimizations you tried regardless of whether you committed to them or abandoned them and whether they improved or hurt performance.**
 
-    The first optimisation I tried (after implementing a naive version that only accesses global memory), was to keep the bins in shared memory, so each block had its local version. Then, I performed a reduction between the blocks, adding the bins together atomically. I let each thread within a block be responsible for adding a region of the bins. This did not work unfortunately and increased the time initially. Using 1024 threads gave the best performance for the method, but the simple global memory method outperformed by around a factor of 2.
+    The first optimisation I tried (after implementing a global memory version), was to keep the bins in shared memory, so each block had its local version. Then, I performed a reduction between the blocks, adding the local bins atomically to the global histogram. I let each thread within a block be responsible for adding a region of the bins, since the block size is always smaller than the number of bins (4096). This did not work unfortunately and increased the time initially. Using 1024 threads gave the best performance for the method, but the simple global memory method outperformed by around a factor of 2.
 
     To reduce contention in global memory I didn't perform the atomic add if a bin is empty. Even though it leads to branching it reduced the histogram kernel execution time.
 
+    Given that the shared histogram kernel was not performing better than the global one, I wanted to test whether it could be due to the GPU architecture. Therefore I tested it on both my machine with a GTC 1070 and in Google Colab with the Tesal T4, using an input length of `2^28 = 268435456`. I measured the time taken by the histogram kernel in ms:
+
+    |        | GTX 1070  | Tesla T4  |
+    |--------|-----------|-----------|
+    | Global |  14.485   |  32.551   |
+    | Shared |  28.068   |  45.390   |
+
+    The shared version still performs worse than the global one, although its relative performance to the global implementation is better on the Tesla T4. I think the reason the shared implementation performs poorly, or rather that the global version performs well, is that the bin count is so large that contention is minimal. Therefore there is more overhead when creating a shared memory version of the program.
+
 2. **Which optimizations you chose in the end and why?**
+
+    I stuck with the shared memory implementation for the purpose of the assignment, although it performs worse than the global memory one.
 
 3. **How many global memory reads are being performed by your kernel? Explain**
 
