@@ -22,12 +22,13 @@ __global__ void histogram_kernel(unsigned int *input, unsigned int *bins,
   // shared bins
   __shared__ unsigned int s_bins[NUM_BINS];
   
-  int bin_region_size = num_bins / blockDim.x;
-  int bin_fill_start = bin_region_size * threadIdx.x;
-  
   // collaboratively set shared bins to 0
-  for (int i = bin_fill_start; i < bin_fill_start + bin_region_size; i++)
-    s_bins[i] = 0;
+  int stride = blockDim.x;  
+  int i = threadIdx.x;
+  while (i < num_bins) {
+      s_bins[i] = 0;
+      i += stride;
+  }
   __syncthreads();
 
   if (el < num_elements){  
@@ -36,10 +37,12 @@ __global__ void histogram_kernel(unsigned int *input, unsigned int *bins,
   __syncthreads();
 
   // collaboratively add to bins between threads
-  for (int i = bin_fill_start; i < bin_fill_start + bin_region_size; i++) {
+  i = threadIdx.x;
+  while (i < num_bins) {
     unsigned int bincount = s_bins[i];
     if (bincount > 0)
       atomicAdd(&bins[i], bincount);
+    i += stride;
   }
 }
 
@@ -72,9 +75,9 @@ void saveres(unsigned int inputLength, unsigned int* hist){
   auto in_time_t = std::chrono::system_clock::to_time_t(now);
 
   std::stringstream fnss;
-  fnss << "res/hist-" << std::to_string(inputLength) << "-";
+  fnss << "data/hist-" << std::to_string(inputLength) << "-";
   fnss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d-%H-%M-%S");
-  fnss << ".txt";
+  fnss << ".dat";
 
   std::ofstream f (fnss.str().c_str());
   for(int i = 0; i < NUM_BINS; i++){
