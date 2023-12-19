@@ -43,14 +43,19 @@ int main(int argc, char **argv) {
   DataType *deviceOutput;
 
   //@@ Insert code below to read in inputLength from args
-  if(argc > 2){
+  if(argc > 1){
     inputLength = std::stoi(argv[1]);
-    S_seg = std::stoi(argv[2]);
-    N_seg = (int) std::ceil(inputLength / (float)S_seg);
   } else { 
-    std::cout << "Input length was not provided";
+    std::cout << "Input length was not provided" << std::endl;
     return;
   }
+  
+  if(argc == 2)
+    S_seg = std::stoi(argv[2]);
+  else
+    S_seg = 128;
+    
+  N_seg = (int) std::ceil(inputLength / (float)S_seg);
 
   printf("The input length is %d\n", inputLength);
   
@@ -88,7 +93,7 @@ int main(int argc, char **argv) {
   dim3 gridSize((S_seg + TPB - 1)/TPB);
   
   //@@ Launch the GPU Kernel here
-  Timer kernelTimer;
+  Timer executionTimer;
   cudaStream_t streams[N_seg];
   for(int i = 0; i < N_seg; i++) {
     cudaStreamCreate(&streams[i]);
@@ -100,8 +105,9 @@ int main(int argc, char **argv) {
     cudaMemcpyAsync(&hostOutput[offset], &deviceOutput[offset], sizeof(DataType) * size, cudaMemcpyDeviceToHost, streams[i]);
     cudaStreamDestroy(streams[i]);
   }
+  cudaDeviceSynchronize();
 
-  printf("Kernel time: %fs\n", kernelTimer.get());  
+  printf("Total execution time (copy + kernel): %fs\n", kernelTimer.get());  
   printf("GPU time: %fs\n", gpuTimer.get());
 
   //@@ Insert code below to compare the output with the reference
