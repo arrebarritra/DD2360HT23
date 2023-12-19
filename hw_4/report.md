@@ -25,10 +25,13 @@ documentclass: scrartcl
 
 1. **Compared to the non-streamed vector addition, what performance gain do you get?**
 
+
+
 2. **Use nvprof to collect traces and the NVIDIA Visual Profiler (nvvp) to visualize the overlap of communication and computation.**
 
 3. **What is the impact of segment size on performance?**
 
+    Too small segment size doesn't improve performance, probably due to the overhead of creating multiple streams. Too large streams can make performance revert to similar levels as the original 
 
 # Exercise 3: Heat Equation with using NVIDIA libraries
 

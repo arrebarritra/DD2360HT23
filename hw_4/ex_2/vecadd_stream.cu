@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
   }
   cudaDeviceSynchronize();
 
-  printf("Total execution time (copy + kernel): %fs\n", kernelTimer.get());  
+  printf("Total execution time (copy + kernel): %fs\n", executionTimer.get());  
   printf("GPU time: %fs\n", gpuTimer.get());
 
   //@@ Insert code below to compare the output with the reference
