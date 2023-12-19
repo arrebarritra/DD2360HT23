@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
   //@@ Insert code below to allocate Host memory for input and output
   cudaHostAlloc(&hostInput1, sizeof(DataType) * inputLength, cudaHostAllocDefault);
   cudaHostAlloc(&hostInput2, sizeof(DataType) * inputLength, cudaHostAllocDefault);
-  cudaHostAlloc(&hostInput3, sizeof(DataType) * inputLength, cudaHostAllocDefault);
+  cudaHostAlloc(&hostOutput, sizeof(DataType) * inputLength, cudaHostAllocDefault);
 
   //@@ Insert code below to initialize hostInput1 and hostInput2 to random numbers, and create reference result in CPU
   std::random_device rd;
