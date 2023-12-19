@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
   Timer kernelTimer;
   cudaStream_t streams[N_seg];
   for(int i = 0; i < N_seg; i++) {
-    cudaStreamCreate(1, &streams[i]);
+    cudaStreamCreate(&streams[i]);
     int offset = i * S_seg;
     int size = std::min(inputLength - i * S_seg, S_seg);
     cudaMemcpyAsync(&deviceInput1[offset], &hostInput1[offset], sizeof(DataType) * size, cudaMemcpyHostToDevice, streams[i]);
