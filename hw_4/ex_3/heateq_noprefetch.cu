@@ -73,7 +73,6 @@ void matrixInit(double* A, int* ArowPtr, int* AcolIndx, int dimX,
 }
 
 int main(int argc, char **argv) {
-  int device = 0;            // Device to be used
   int dimX;                  // Dimension of the metal rod
   int nsteps;                // Number of time steps to perform
   double alpha = 0.4;        // Diffusion coefficient
@@ -85,7 +84,6 @@ int main(int argc, char **argv) {
   double* tmp;               // Temporal array of dimX for computations
   size_t bufferSize = 0;     // Buffer size needed by some routines
   void* buffer = nullptr;    // Buffer used by some routines in the libraries
-  int concurrentAccessQ;     // Check if concurrent access flag is set
   double zero = 0;           // Zero constant
   double one = 1;            // One constant
   double norm;               // Variable for norm values
@@ -107,9 +105,6 @@ int main(int argc, char **argv) {
   printf("The X dimension of the grid is %d \n", dimX);
   printf("The number of time steps to perform is %d \n", nsteps);
 
-  // Get if the cudaDevAttrConcurrentManagedAccess flag is set
-  gpuCheck(cudaDeviceGetAttribute(&concurrentAccessQ, cudaDevAttrConcurrentManagedAccess, device));
-
   // Calculate the number of non zero values in the sparse matrix. This number
   // is known from the structure of the sparse matrix
   nzv = 3 * dimX - 6;
@@ -124,18 +119,6 @@ int main(int argc, char **argv) {
   gpuCheck(cudaMallocManaged(&tmp, dimX * sizeof(double)));
   cputimer_stop("Allocating device memory");
 
-  // Check if concurrentAccessQ is non zero in order to prefetch memory
-  if (concurrentAccessQ) {
-    cputimer_start();
-    //@@ Insert code to prefetch in Unified Memory asynchronously to CPU
-    gpuCheck(cudaMemPrefetchAsync(temp, dimX * sizeof(double), cudaCpuDeviceId));
-    gpuCheck(cudaMemPrefetchAsync(A, nzv * sizeof(double), cudaCpuDeviceId));
-    gpuCheck(cudaMemPrefetchAsync(ARowPtr, dimX * sizeof(int), cudaCpuDeviceId));
-    gpuCheck(cudaMemPrefetchAsync(AColIndx, nzv * sizeof(int), cudaCpuDeviceId));
-    gpuCheck(cudaMemPrefetchAsync(tmp, dimX * sizeof(double), cudaCpuDeviceId));
-    cputimer_stop("Prefetching GPU memory to the host");
-  }
-
   // Initialize the sparse matrix
   cputimer_start();
   matrixInit(A, ARowPtr, AColIndx, dimX, alpha);
@@ -147,17 +130,6 @@ int main(int argc, char **argv) {
   temp[0] = tempLeft;
   temp[dimX - 1] = tempRight;
   cputimer_stop("Initializing memory on the host");
-
-  if (concurrentAccessQ) {
-    cputimer_start();
-    //@@ Insert code to prefetch in Unified Memory asynchronously to the GPU
-    gpuCheck(cudaMemPrefetchAsync(temp, dimX * sizeof(double), device));
-    gpuCheck(cudaMemPrefetchAsync(A, nzv * sizeof(double), device));
-    gpuCheck(cudaMemPrefetchAsync(ARowPtr, dimX * sizeof(int), device));
-    gpuCheck(cudaMemPrefetchAsync(AColIndx, nzv * sizeof(int), device));
-    gpuCheck(cudaMemPrefetchAsync(tmp, dimX * sizeof(double), device));
-    cputimer_stop("Prefetching GPU memory to the device");
-  }
 
   //@@ Insert code to create the cuBLAS handle
   cublasCheck(cublasCreate(&cublasHandle));
