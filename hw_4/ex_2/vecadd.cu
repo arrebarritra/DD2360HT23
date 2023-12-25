@@ -51,9 +51,9 @@ int main(int argc, char **argv) {
   printf("The input length is %d\n", inputLength);
   
   //@@ Insert code below to allocate Host memory for input and output
-  hostInput1 = (DataType*) malloc(sizeof(DataType) * inputLength);
-  hostInput2 = (DataType*) malloc(sizeof(DataType) * inputLength);
-  hostOutput = (DataType*) malloc(sizeof(DataType) * inputLength);
+  cudaHostAlloc(&hostInput1, sizeof(DataType) * inputLength, cudaHostAllocDefault);
+  cudaHostAlloc(&hostInput2, sizeof(DataType) * inputLength, cudaHostAllocDefault);
+  cudaHostAlloc(&hostOutput, sizeof(DataType) * inputLength, cudaHostAllocDefault);
   
   //@@ Insert code below to initialize hostInput1 and hostInput2 to random numbers, and create reference result in CPU
   std::random_device rd;
@@ -123,9 +123,9 @@ int main(int argc, char **argv) {
   cudaFree(deviceOutput);
 
   //@@ Free the CPU memory here
-  free(hostInput1);
-  free(hostInput2);
-  free(hostOutput);
+  cudaFreeHost(hostInput1);
+  cudaFreeHost(hostInput2);
+  cudaFreeHost(hostOutput);
 
   return 0;
 }

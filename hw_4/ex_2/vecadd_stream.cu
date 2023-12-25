@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     return;
   }
   
-  if(argc == 2)
+  if(argc == 3)
     S_seg = std::stoi(argv[2]);
   else
     S_seg = 128;
@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
   N_seg = (int) std::ceil(inputLength / (float)S_seg);
 
   printf("The input length is %d\n", inputLength);
+  printf("Using %d segments of %d values\n", N_seg, S_seg);
   
   //@@ Insert code below to allocate Host memory for input and output
   cudaHostAlloc(&hostInput1, sizeof(DataType) * inputLength, cudaHostAllocDefault);
@@ -94,22 +95,25 @@ int main(int argc, char **argv) {
   
   //@@ Launch the GPU Kernel here
   Timer executionTimer;
-  cudaStream_t streams[N_seg];
+  
+  cudaStream_t* streams = new cudaStream_t[N_seg];
   for(int i = 0; i < N_seg; i++) {
     cudaStreamCreate(&streams[i]);
+  }
+
+  for(int i = 0; i < N_seg; i++) {
     int offset = i * S_seg;
     int size = std::min(inputLength - i * S_seg, S_seg);
     cudaMemcpyAsync(&deviceInput1[offset], &hostInput1[offset], sizeof(DataType) * size, cudaMemcpyHostToDevice, streams[i]);
     cudaMemcpyAsync(&deviceInput2[offset], &hostInput2[offset], sizeof(DataType) * size, cudaMemcpyHostToDevice, streams[i]);
     vecAdd<<<gridSize,blockSize,0,streams[i]>>>(deviceInput1, deviceInput2, deviceOutput, inputLength, offset);
     cudaMemcpyAsync(&hostOutput[offset], &deviceOutput[offset], sizeof(DataType) * size, cudaMemcpyDeviceToHost, streams[i]);
-    cudaStreamDestroy(streams[i]);
   }
   cudaDeviceSynchronize();
-
+  
   printf("Total execution time (copy + kernel): %fs\n", executionTimer.get());  
   printf("GPU time: %fs\n", gpuTimer.get());
-
+  
   //@@ Insert code below to compare the output with the reference
   printf("VERIFYING\n");
   bool isCorrect = true;
@@ -119,18 +123,19 @@ int main(int argc, char **argv) {
       break;
     }
   }
-
+  
   if (isCorrect)
-    printf("Correct\n");
+  printf("Correct\n");
   else
-    printf("CPU and GPU result differ\n");
-
+  printf("CPU and GPU result differ\n");
+  
   //@@ Free the GPU memory here
   cudaFree(deviceInput1);
   cudaFree(deviceInput2);
   cudaFree(deviceOutput);
-
+  
   //@@ Free the CPU memory here
+  delete[] streams;
   cudaFreeHost(hostInput1);
   cudaFreeHost(hostInput2);
   cudaFreeHost(hostOutput);
