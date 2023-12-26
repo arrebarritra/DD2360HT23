@@ -61,7 +61,7 @@ documentclass: scrartcl
 
     ![FLOPS](ex_3/res/plt_flops.png)
 
-    For small `dimX` peak throughput isn't reached as all the warps are not occupied. At large `dimX` we reach a peak throughput 619 MFLOPS.
+    For small `dimX` peak throughput isn't reached as all the warps are not occupied. At large `dimX` we reach a peak throughput of 619 MFLOPS. I did not have any estimation of the FLOPS achieved in lab 2, but theoretically the GTX 1070 can reach 202.0 GFLOPS for double precision (FP64) operations which more than 300x what was achieved. This could partly be explained by the large `dimX` leading to many global reads and bad cache locality.
 
 
 2. **Run the program with dimX=128 and vary nsteps from 100 to 10000. What do you observe?**
